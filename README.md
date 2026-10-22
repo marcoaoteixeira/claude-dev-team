@@ -92,3 +92,4 @@ Edit the files under `plugins/dev-team/`, then:
 4. Try it locally: `claude plugin marketplace update nameless-marketplace`, then restart Claude Code.
 
 Conventions for editing the files are in `CLAUDE.md`.
+
