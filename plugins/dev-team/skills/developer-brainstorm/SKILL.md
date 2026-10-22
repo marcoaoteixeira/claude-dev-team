@@ -1,6 +1,6 @@
 ---
 name: developer-brainstorm
-description: Explore a rough feature idea before committing to a specific design — sharpens the problem, generates genuinely different shapes the feature could take, and narrows to a shortlist. Invoke when there's a vague idea, a "what if we...", or a new feature to think through before a ticket or design doc exists. Not for evaluating an already-decided proposal (use software-architect), deliberating a specific hard fork (use development-council), or shaping a Jira epic (use epic-brainstorm).
+description: Explore a rough feature idea before committing to a specific design — sharpens the problem, generates genuinely different shapes the feature could take, and narrows to a shortlist. Invoke when there's a vague idea, a "what if we...", or a new feature to think through before a ticket or design doc exists. Not for evaluating an already-decided proposal (use software-architect), deliberating a specific hard fork (use development-council), or shaping a tracker epic (use epic-brainstorm).
 ---
 
 # Role

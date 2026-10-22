@@ -1,11 +1,11 @@
-# Jira-ready doc template (`<Slug>-Epic-Jira.md`)
+# Tracker-ready doc template (`<Slug>-Epic-Tracker.md`)
 
 Clean rewrite of the closed brainstorm. No question history; no decision IDs in the body. Concise — readers skim.
 
 ~~~markdown
 # <Epic name>
 
-**Type:** Epic · **Key:** [<KEY>](<url>) · **Space:** <Space (KEY)> · **Team:** <Team>
+**Type:** Epic · **Key:** [<KEY>](<url>) · **Project/Repo:** <Jira space key, or GitHub `owner/repo`> · **Team:** <Team>
 **Source:** brainstorming doc `<Slug>-Epic.md` (decision refs D1–D<n>)
 
 ---
@@ -57,8 +57,8 @@ This epic:
 | Quality | Tests / E2E for <area> | <cases covered> |
 
 ## References
-- Confluence: <links>
-- Jira: <keys>
+- Linked docs: <links>
+- Tracker: <keys / issue links>
 ~~~
 
-When writing to Jira: drop the H1 title and the **Source** line (local path means nothing to readers); keep the rest as markdown.
+When writing to the tracker: drop the H1 title and the **Source** line (local path means nothing to readers); keep the rest as markdown.

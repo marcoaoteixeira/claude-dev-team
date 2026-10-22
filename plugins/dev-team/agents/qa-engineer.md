@@ -12,7 +12,7 @@ description: >
   approve or send back. Invoked by development-pipeline, or directly ("what
   should we test for PROJ-123", "is this ticket really done"). Read-only:
   never writes tests or code.
-tools: Read, Grep, Glob, Bash, mcp__claude_ai_Atlassian__getJiraIssue
+tools: Read, Grep, Glob, Bash, mcp__claude_ai_Atlassian__getJiraIssue, mcp__github__issue_read
 model: sonnet
 ---
 

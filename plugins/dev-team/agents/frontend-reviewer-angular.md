@@ -12,7 +12,7 @@ description: >
   fixes go back to frontend-developer-angular. Not for backend code
   (backend-reviewer-dotnet or the reviewer matching the project's backend
   stack).
-tools: Read, Grep, Glob, Bash, mcp__sonarqube__analyze_code_snippet, mcp__claude_ai_Atlassian__getJiraIssue
+tools: Read, Grep, Glob, Bash, mcp__sonarqube__analyze_code_snippet, mcp__claude_ai_Atlassian__getJiraIssue, mcp__github__issue_read
 model: opus
 ---
 

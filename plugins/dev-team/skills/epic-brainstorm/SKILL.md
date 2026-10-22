@@ -1,16 +1,16 @@
 ---
 name: epic-brainstorm
-description: Brainstorm a Jira epic with the user part by part, recording only confirmed facts as numbered decisions in a local markdown doc, then produce a Jira-ready epic doc, (only on approval) write it to Jira, and refine it into development-ready child tickets with the product-owner agent (created only on approval). Use this whenever the user wants to brainstorm, shape, draft, refine or plan a Jira epic, says "let's brainstorm an epic", pastes an epic name with a few bullet points to explore, asks to turn a brainstorm into an epic description, or wants an epic broken down into refined tickets — even if they don't say "skill" or "brainstorm" explicitly. Not for a single one-off ticket (product-owner skill) or for reviewing code.
+description: Brainstorm a tracker epic (Jira or GitHub Issues) with the user part by part, recording only confirmed facts as numbered decisions in a local markdown doc, then produce a tracker-ready epic doc, (only on approval) write it to the tracker, and refine it into development-ready child tickets with the product-owner agent (created only on approval). Use this whenever the user wants to brainstorm, shape, draft, refine or plan an epic, says "let's brainstorm an epic", pastes an epic name with a few bullet points to explore, asks to turn a brainstorm into an epic description, or wants an epic broken down into refined tickets — even if they don't say "skill" or "brainstorm" explicitly. Not for a single one-off ticket (product-owner skill) or for reviewing code.
 ---
 
 # Epic brainstorm
 
-Shape a Jira epic together with the user. The user is thinking out loud to define work; a wrong assumption written into the epic pollutes every ticket created from it. So the job is to **capture what the user decides**, surface what's unclear, and never fill gaps with guesses.
+Shape a tracker epic together with the user. The user is thinking out loud to define work; a wrong assumption written into the epic pollutes every ticket created from it. So the job is to **capture what the user decides**, surface what's unclear, and never fill gaps with guesses.
 
 Two documents come out of it, in the folder the user works in (current working directory unless they name another):
 
 1. `<Slug>-Epic.md` — the brainstorm log: decisions, answered and open questions, working models. Template: `references/brainstorm-template.md`.
-2. `<Slug>-Epic-Jira.md` — the clean, Jira-ready epic description. Template: `references/jira-template.md`.
+2. `<Slug>-Epic-Tracker.md` — the clean, tracker-ready epic description. Template: `references/epic-template.md`.
 
 If screenshots or other files are needed, put them in `<Slug>-Epic-Assets/`.
 
@@ -21,10 +21,10 @@ All document content is in normal English and concise. Readers skim tickets — 
 Check what the user already gave you. Ask only for what's missing, in one short batch:
 
 - **Epic name**
-- **Space / Jira project** (e.g., key `PC`)
+- **Tracker project/repo** (e.g. Jira key `PC`, or GitHub `owner/repo`)
 - **Team**
 - **Main parts / topics** the epic covers (if not given, ask; don't invent them)
-- **Links or documents** for context (Confluence pages, Jira epics, designs, files)
+- **Links or documents** for context (linked wiki pages, tracker epics, designs, files)
 
 The user may give much more on start — clarifications per part, message examples, constraints. Treat everything they state as confirmed fact.
 
@@ -32,10 +32,11 @@ The user may give much more on start — clarifications per part, message exampl
 
 Before asking questions, read what's available so the questions are informed:
 
-- Fetch linked Confluence pages / Jira issues (Atlassian MCP tools; load them with ToolSearch if deferred).
-- Search Jira in the project for related tickets and for an **existing epic with the same name** (JQL on summary/text). If an epic already exists, note its key — the description goes there later instead of creating a new one.
+- Run `tracker-detection` once; use its named adapter for every tracker call in this skill from here on.
+- `fetch-linked-docs` for any linked wiki/design pages (adapter says "N/A" → skip).
+- `search-tickets` in the project/repo for related tickets and for an **existing epic with the same name**. If an epic already exists, note its key — the description goes there later instead of creating a new one.
 - If that epic **already has a description or child tickets**, someone has shaped it already. Summarise it in Background (description points + child ticket keys/titles) and make the first question: treat its content as **confirmed input** (record it as decisions, brainstorm only the gaps) or as a **draft to redo**? Warn that changing the scope may affect the existing child tickets. Until answered, don't record its content as decisions — and point out where it contradicts what the user said.
-- Search Confluence for pages on the same topic (CQL on title/text). Related design pages often already hold decisions or open points.
+- `fetch-linked-docs` again for pages on the same topic, not just ones already linked (adapter says "N/A" → skip; related design pages often already hold decisions or open points).
 - If a previous `*-Epic.md` exists in the folder, glance at it for the user's house style.
 
 Large tool results: extract only what you need (keys, summaries, the relevant descriptions) rather than dumping everything into context.
@@ -66,20 +67,20 @@ Rules that keep the epic trustworthy:
 - **Flag risks plainly.** If a decision has a security or access-control consequence (e.g., everyone gets access while X is true), say so explicitly and ask who owns that boundary.
 - When a part has no meaningful open questions left, mark it **closed** and move on. Minor details can go to "To settle at refinement".
 
-## Step 4 — Produce the Jira-ready doc
+## Step 4 — Produce the tracker-ready doc
 
-When all parts are closed, tell the user and offer to draft `<Slug>-Epic-Jira.md` from the Jira template. It is a clean rewrite of the decisions — no question history, no decision IDs in the body (except the source line):
+When all parts are closed, tell the user and offer to draft `<Slug>-Epic-Tracker.md` from the epic template. It is a clean rewrite of the decisions — no question history, no decision IDs in the body (except the source line):
 
 - Summary, Background, Flow/Model, Scope (one subsection per part), Out of scope, Dependencies, To settle at refinement, Candidate tickets (area · ticket · acceptance criteria), References.
 - **PO checkpoint 2.** Before showing the draft, invoke `dev-team:product-owner` (mode Review) on it: goal clarity, value, scope/out-of-scope, testable AC, hidden second epic. Fix what is clearly right; turn the rest into questions for the user.
 - Acceptance criteria follow from decisions. Where you had to **infer** something not explicitly decided, list those points for the user to check before they rely on it.
 
-## Step 5 — Write to Jira (only with explicit approval)
+## Step 5 — Write to the tracker (only with explicit approval)
 
-Writing to Jira publishes to the team, so ask first: "Write this onto <KEY>, or keep it local?"
+Writing to the tracker publishes to the team, so ask first: "Write this onto <KEY>, or keep it local?"
 
-- If approved and an epic exists: update its **description only** (`editJiraIssue`, markdown), leaving summary, status, assignee and priority as they are unless told otherwise. Drop the title and the local source line from the body.
-- If no epic exists, ask before creating one.
+- If approved and an epic exists: update its **description only** via the adapter's update path (Jira: `editJiraIssue`; GitHub: `issue_write` on the body), leaving summary, status, assignee and priority as they are unless told otherwise. Drop the title and the local source line from the body.
+- If no epic exists, ask before `create-ticket`-ing one.
 - Afterwards, update the brainstorm doc header status.
 - Then offer Step 6 in one line.
 
@@ -87,15 +88,15 @@ Writing to Jira publishes to the team, so ask first: "Write this onto <KEY>, or 
 
 Only when the user asks for it or accepts the offer.
 
-1. Invoke `dev-team:product-owner` (mode Breakdown) with the epic key (or the Jira-ready doc), the brainstorm doc path and the project key. It returns open questions, proposed tickets in order, and changes to existing issues.
+1. Invoke `dev-team:product-owner` (mode Breakdown) with the epic key (or the tracker-ready doc), the brainstorm doc path and the project/repo. It returns open questions, proposed tickets in order, and changes to existing issues.
 2. Show the user the **open questions first** (with the PO's recommended answers) and a compact ticket list (order · type · title · one line of value). Full drafts go to `<Slug>-Epic-Tickets.md` next to the other docs.
 3. Apply the answers: update the drafts yourself when the change is mechanical; re-invoke `dev-team:product-owner` when an answer changes the slicing.
 4. **Create only on explicit approval** ("create these N tickets in <PROJECT>?"):
-   - Required fields per issue type come from `getJiraIssueTypeMetaWithFields` — e.g. dedicated Acceptance Criteria / Assumptions fields on Stories. Pass them in `additional_fields`; the parent epic as `{"parent": {"key": "<EPIC>"}}`.
-   - Create in the proposed order so keys read naturally; then add the dependency links (`createIssueLink`, type Blocks: `inwardIssue` = the blocker, `outwardIssue` = the blocked ticket).
+   - `required-fields-for-type` per issue type ("N/A" → skip) — e.g. dedicated Acceptance Criteria / Assumptions fields on Stories.
+   - `create-ticket` in the proposed order so keys read naturally, with the parent epic set; then `link-dependency` for each dependency.
    - Proposed changes to existing issues are separate edits — confirm them separately.
    - On a failure, stop, report what was created, and fix before continuing — never leave duplicates.
-5. Update the epic's ticket table (Jira-ready doc and, with approval, the epic description) with the real keys, and `<Slug>-Epic-Tickets.md` with keys and status.
+5. Update the epic's ticket table (tracker-ready doc and, with approval, the epic description) with the real keys, and `<Slug>-Epic-Tickets.md` with keys and status.
 
 The tickets are then ready for `/dev-team:development-pipeline <KEY>`.
 

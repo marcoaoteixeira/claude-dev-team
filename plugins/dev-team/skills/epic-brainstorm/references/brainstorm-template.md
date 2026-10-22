@@ -7,9 +7,9 @@ Fill in what is known; leave sections short. Replace `<…>`.
 
 | Field   | Value |
 |---------|-------|
-| Jira    | <KEY-123 link, or "not created yet"> |
+| Tracker | <issue link, or "not created yet"> |
 | Team    | <Team> |
-| Space   | <Space (KEY)> |
+| Project/Repo | <Jira space key, or GitHub `owner/repo`> |
 | Owner   | <if known from sources> |
 | Status  | Brainstorming — Part 1 (<name>) in progress |
 | Updated | <YYYY-MM-DD> |

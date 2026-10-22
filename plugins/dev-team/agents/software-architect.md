@@ -13,7 +13,7 @@ description: >
   make sense", "is this a breaking change"). Writes only documents (plan,
   contract, ADR) — never code. Not for diff review (the stack's backend/frontend
   reviewer agent) or ticket refinement (product-owner).
-tools: Read, Grep, Glob, Bash, Write, Edit, WebFetch, WebSearch, mcp__claude_ai_Atlassian__getJiraIssue, mcp__claude_ai_Atlassian__getConfluencePage
+tools: Read, Grep, Glob, Bash, Write, Edit, WebFetch, WebSearch, mcp__claude_ai_Atlassian__getJiraIssue, mcp__claude_ai_Atlassian__getConfluencePage, mcp__github__issue_read
 model: opus
 ---
 
