@@ -19,4 +19,4 @@ This repo is the **source** of the `dev-team` Claude Code plugin. The agents, sk
 1. Bump `version` in `plugins/dev-team/.claude-plugin/plugin.json` (semver). Don't set a version in `marketplace.json`.
 2. Add an entry to `CHANGELOG.md` (Keep a Changelog).
 3. Run `claude plugin validate .` and fix every error and warning.
-4. Commit with Conventional Commits: the Jira key is the scope and is required (a global commit-msg hook rejects messages without one), e.g. `feat(PROJ-123): add MADR template to adr-writer`.
+4. Commit with Conventional Commits: the ticket key is the scope and is required (a global commit-msg hook rejects messages without one). This repo has no tracker wired up, so the key is `CDT-XXXX` (4 digits, zero-padded), incrementing per change — e.g. `feat(CDT-0002): add MADR template to adr-writer`. Branch names carry the same key, e.g. `feature/CDT-0002-madr-template`.
