@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>dev-team · development-pipeline</title>
-<meta name="description" content="How the dev-team plugin's development-pipeline skill takes a refined Jira ticket from design to a draft pull request.">
+<meta name="description" content="How the dev-team plugin's development-pipeline skill takes a refined ticket (Jira or GitHub Issues) from design to a draft pull request.">
 <style>
   :root {
     --bg: #f7f7f8;
@@ -197,7 +197,7 @@
 
 <header class="page">
   <h1>development-pipeline</h1>
-  <p class="sub">How the <code>dev-team</code> plugin takes one refined Jira ticket from design to a reviewed, QA-approved draft pull request — who's involved at each stage, what branches the flow, and what stops it from running away unattended.</p>
+  <p class="sub">How the <code>dev-team</code> plugin takes one refined ticket (Jira or GitHub Issues) from design to a reviewed, QA-approved draft pull request — who's involved at each stage, what branches the flow, and what stops it from running away unattended.</p>
   <div class="toolbar">
     <button type="button" data-theme-btn="light" aria-pressed="false">Light</button>
     <button type="button" data-theme-btn="dark" aria-pressed="false">Dark</button>
@@ -229,8 +229,8 @@
       <div class="stage-body">
         <div class="stage-head"><h3>Start-up</h3></div>
         <div class="actors"><span class="actor conductor">conductor</span></div>
-        <p class="stage-desc">Load the ticket (needs testable acceptance criteria — not refined → stop). Repo preflight: clean working tree, default branch, <b>stack detection</b> (file markers, not a README claim — ambiguous or unsupported → ask or stop). Branch per <code>delivery-conventions</code>, write the state file.</p>
-        <div class="produces"><b>Produces:</b> branch, worktree, <code>state.json</code> (ticket, budget, detected stack)</div>
+        <p class="stage-desc"><b>Tracker detection</b> (which MCP/CLI is connected — Jira or GitHub Issues), then load the ticket (needs testable acceptance criteria — not refined → stop). Repo preflight: clean working tree, default branch, <b>stack detection</b> (file markers, not a README claim — ambiguous or unsupported → ask or stop). Branch per <code>delivery-conventions</code>, write the state file.</p>
+        <div class="produces"><b>Produces:</b> branch, worktree, <code>state.json</code> (ticket, tracker, budget, detected stack)</div>
       </div>
     </div>
 
@@ -325,9 +325,9 @@
     <div class="stage">
       <div class="num">9</div>
       <div class="stage-body">
-        <div class="stage-head"><h3>Jira hand-off</h3> <span class="tag optional-tag">needs user approval</span></div>
+        <div class="stage-head"><h3>Tracker hand-off</h3> <span class="tag optional-tag">needs user approval</span></div>
         <div class="actors"><span class="actor conductor">conductor</span></div>
-        <p class="stage-desc">Only after the user explicitly approves — never an agent's verdict: posts a condensed summary comment on the ticket and transitions it to Code Review.</p>
+        <p class="stage-desc">Only after the user explicitly approves — never an agent's verdict: posts a condensed summary comment on the ticket and moves it to Code Review (Jira transition, or a GitHub Projects v2 status move via <code>gh</code>).</p>
       </div>
     </div>
 
@@ -352,6 +352,16 @@
     <div class="card"><h3>Android frontend</h3><p><code>build.gradle.kts</code> and an <code>AndroidManifest.xml</code> under an app/module folder.</p></div>
   </div>
   <p style="margin-top:14px" class="lede">Ambiguous markers, an empty/new project, or a detected stack with no agent pair yet → the pipeline asks once or stops; it never substitutes the nearest existing pair.</p>
+</section>
+
+<section>
+  <h2>Tracker detection</h2>
+  <p class="lede">Which work tracker a ticket lives in is resolved once, from which tool is actually connected — not a declared setting that can go stale.</p>
+  <div class="cards">
+    <div class="card"><h3>Jira</h3><p>An Atlassian MCP tool is connected. Adapter: the plugin's existing Jira calls (unchanged).</p></div>
+    <div class="card"><h3>GitHub Issues / Projects v2</h3><p>The <code>github</code> MCP is connected and <code>gh auth status</code> succeeds with the <code>project</code> scope. Status moves (e.g. to Code Review) go through <code>gh project item-edit</code>, since the connected GitHub MCP server has no Projects-v2 tool.</p></div>
+  </div>
+  <p style="margin-top:14px" class="lede">Both connected, or neither → the pipeline asks once which tracker to use; it never guesses. A ticket on no Projects v2 board can still be read and commented on — only the status-move step needs the board.</p>
 </section>
 
 <footer>
