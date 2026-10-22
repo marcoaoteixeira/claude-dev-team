@@ -16,6 +16,7 @@ This repo is the **source** of the `dev-team` Claude Code plugin. The agents, sk
 
 ## Releasing a change
 
+0. Never commit to `main` directly. Every change starts on a new branch off an up-to-date `main`, named `<kind>/CDT-XXXX-<slug>` (`kind` = `feature`|`fix`|`chore`|`refactor`|`docs`). Open a PR to merge it back.
 1. Bump `version` in `plugins/dev-team/.claude-plugin/plugin.json` (semver). Don't set a version in `marketplace.json`.
 2. Add an entry to `CHANGELOG.md` (Keep a Changelog).
 3. Run `claude plugin validate .` and fix every error and warning.
