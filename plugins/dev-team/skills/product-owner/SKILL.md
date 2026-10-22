@@ -1,6 +1,6 @@
 ---
 name: product-owner
-description: Turn a feature request, bug report or requirement discussion into one well-formed, development-ready Jira ticket — type, title, value, context, scope, Given/When/Then acceptance criteria — and create it on approval (or draft it to paste). For one-off tickets; epics and multi-ticket breakdowns go through epic-brainstorm. Manual invocation only, since creating a real ticket is a side effect whose timing you want to control.
+description: Turn a feature request, bug report or requirement discussion into one well-formed, development-ready tracker ticket (Jira or GitHub Issues) — type, title, value, context, scope, Given/When/Then acceptance criteria — and create it on approval (or draft it to paste). For one-off tickets; epics and multi-ticket breakdowns go through epic-brainstorm. Manual invocation only, since creating a real ticket is a side effect whose timing you want to control.
 argument-hint: [what the ticket is about]
 disable-model-invocation: true
 ---
@@ -20,8 +20,9 @@ points, priority, dates, owners or root causes).
 
 - Use what the conversation already holds (the idea, the bug just found,
   the decision to defer something).
-- Look things up before asking: the code, existing tickets (JQL on the
-  project — duplicates?), the parent epic if one is named.
+- Look things up before asking: the code, existing tickets (run
+  `tracker-detection` once, then its adapter's `search-tickets` op for
+  duplicates), the parent epic if one is named.
 - Ask only for what is material and missing, in one short batch: the
   user-facing outcome, AC you cannot infer, the epic it belongs to, repro
   steps for a bug.
@@ -42,16 +43,12 @@ Show the full draft to the user.
 
 # 3. Create (on approval)
 
-- Atlassian MCP connected → confirm project and type if ambiguous, then:
-  - required fields per type from `getJiraIssueTypeMetaWithFields`
-    (e.g. dedicated Acceptance Criteria / Assumptions fields), passed in
-    `additional_fields`;
-  - parent epic: `{"parent": {"key": "<EPIC>"}}`;
-  - dependency links with `createIssueLink` (Blocks: `inwardIssue` =
-    blocker, `outwardIssue` = blocked).
-  Return the key and link.
-- No MCP, or the call fails → say so plainly and return the draft ready
-  to paste. Never imply a ticket exists when it doesn't.
+- Tracker detected → confirm project/repo and type if ambiguous, then use
+  its adapter: `required-fields-for-type` (passed into the create call;
+  "N/A" → skip), `create-ticket` with the parent epic when one is named,
+  `link-dependency` for any dependency links. Return the key and link.
+- No tracker detected, or the call fails → say so plainly and return the
+  draft ready to paste. Never imply a ticket exists when it doesn't.
 
 # 4. Save a copy
 

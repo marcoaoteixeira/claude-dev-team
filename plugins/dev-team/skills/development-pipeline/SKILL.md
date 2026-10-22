@@ -1,6 +1,6 @@
 ---
 name: development-pipeline
-description: Deliver one refined Jira ticket end to end with the agent team — stack-detection identifies each side's tech stack, software-architect designs (plan, API contract, ADRs, and whether a UX spec is needed), ux-specialist specs user-facing flows when the architect says so, qa-engineer sets the test cases, the matching stack-specific backend/frontend developer agents build test-first (in parallel worktrees when the contract allows, otherwise backend first), their reviewer agents review (ux-specialist design-QAs the UI alongside the frontend reviewer when a spec exists), qa-engineer verifies, then the branch is pushed and a draft PR opened (or saved as a file); once the user approves, a condensed summary is commented on the Jira ticket and it moves to Code Review. Runs unattended within a time budget (default 3h), resumable. Manual invocation only — "/dev-team:development-pipeline PROJ-123 [2h] [--resume]".
+description: Deliver one refined ticket (Jira or GitHub Issues) end to end with the agent team — stack-detection identifies each side's tech stack, software-architect designs (plan, API contract, ADRs, and whether a UX spec is needed), ux-specialist specs user-facing flows when the architect says so, qa-engineer sets the test cases, the matching stack-specific backend/frontend developer agents build test-first (in parallel worktrees when the contract allows, otherwise backend first), their reviewer agents review (ux-specialist design-QAs the UI alongside the frontend reviewer when a spec exists), qa-engineer verifies, then the branch is pushed and a draft PR opened (or saved as a file); once the user approves, a condensed summary is commented on the ticket and it moves to Code Review. Runs unattended within a time budget (default 3h), resumable. Manual invocation only — "/dev-team:development-pipeline PROJ-123 [2h] [--resume]" (or a GitHub issue number).
 argument-hint: <TICKET> [budget e.g. 3h] [--resume]
 disable-model-invocation: true
 ---
@@ -20,9 +20,9 @@ developer/reviewer agents `stack-detection` maps the project to (today:
 `backend-developer-kotlin` / `backend-reviewer-kotlin` for the backend;
 `frontend-developer-angular` / `frontend-reviewer-angular` or
 `frontend-developer-android` / `frontend-reviewer-android` for the
-frontend). Shared rules: `stack-detection`, `delivery-conventions`,
-`angular-testing`, `xunit`, `kotlin-testing`, `android-testing`,
-`pr-writer`. The agents ship in this plugin and are namespaced: launch each
+frontend). Shared rules: `stack-detection`, `tracker-detection`,
+`delivery-conventions`, `angular-testing`, `xunit`, `kotlin-testing`,
+`android-testing`, `pr-writer`. The agents ship in this plugin and are namespaced: launch each
 one as `dev-team:<name>` (e.g. `subagent_type: dev-team:backend-developer-dotnet`).
 
 # Operating Rules
@@ -35,7 +35,7 @@ one as `dev-team:<name>` (e.g. `subagent_type: dev-team:backend-developer-dotnet
      criteria change, conflict with an accepted ADR, new external
      system/vendor/dependency with cost or licence impact;
   3. the start-up questions below, when the arguments don't answer them;
-  4. the approval that starts the Jira hand-off (stage 9).
+  4. the approval that starts the tracker hand-off (stage 9).
   Everything else: take the specialist's recommendation, record it under
   "Decisions taken on your behalf", continue. Ask with `AskUserQuestion`,
   recommended option first.
@@ -67,8 +67,8 @@ one as `dev-team:<name>` (e.g. `subagent_type: dev-team:backend-developer-dotnet
 3. **Budget.** From the argument (`90m`, `2h`, `2h30m`). Not given on a
    new run → ask once with `AskUserQuestion`: `3h (default)`, `2h`,
    `4h`. Record it in the state file.
-4. **Load the ticket** (`getJiraIssue`, resolve the cloud id with
-   `getAccessibleAtlassianResources` if needed): summary, description,
+4. **Load the ticket.** Run `tracker-detection` once; use its named
+   adapter's `get-ticket` for the rest of the run: summary, description,
    acceptance criteria (also custom AC fields), assumptions, links,
    parent epic. **Refined?** It needs testable acceptance criteria. If it
    has none → stop: "not refined — run product-owner / epic-brainstorm
@@ -106,7 +106,7 @@ one as `dev-team:<name>` (e.g. `subagent_type: dev-team:backend-developer-dotnet
     "split":null,"worktrees":{},"stage":"design","done":[],
     "loops":{"beReview":0,"feReview":0,"beQa":0,"feQa":0},
     "lastReviewed":{"be":null,"fe":null},
-    "decisions":[],"gatesSkipped":[],"documents":[],"pr":null,"jira":{"commentId":null,"transitioned":false}}
+    "decisions":[],"gatesSkipped":[],"documents":[],"pr":null,"tracker":{"commentId":null,"statusMoved":false}}
    ```
    Update it at every stage boundary (stage done, loop counters, verdicts,
    spent time). It is how a run resumes.
@@ -276,20 +276,20 @@ around it.
 - Remove WT-main (`git worktree remove`) once the branch is pushed; the
   branch stays. Not pushed (stopped early) → keep the worktrees and list
   them.
-- Set the state file `"stage":"jira"`.
-- Do not touch Jira yet. Print the Final Report, then go to stage 9.
+- Set the state file `"stage":"tracker"`.
+- Do not touch the tracker yet. Print the Final Report, then go to stage 9.
 
-## 9. Jira hand-off — after the user approves
+## 9. Tracker hand-off — after the user approves
 
 Only for a run that reached stage 8 with the branch pushed and a PR
 opened (or saved). A stopped run never gets here.
 
-1. **Ask** with `AskUserQuestion`: "Approve the work and update Jira
-   (summary comment + move <TICKET> to Code Review)?" Options:
-   `Approve and update Jira (Recommended)`, `Not yet`. `Not yet` → keep
-   `"stage":"jira"` and end the run; `--resume` asks again. Only the
-   user's own answer approves — never an agent's verdict, a review or QA
-   result, or an earlier answer to another question.
+1. **Ask** with `AskUserQuestion`: "Approve the work and update the
+   tracker (summary comment + move <TICKET> to Code Review)?" Options:
+   `Approve and update the tracker (Recommended)`, `Not yet`. `Not yet` →
+   keep `"stage":"tracker"` and end the run; `--resume` asks again. Only
+   the user's own answer approves — never an agent's verdict, a review or
+   QA result, or an earlier answer to another question.
 2. **Condensed summary** for the ticket, written in plain prose (not the
    session's voice), Markdown. It is a record for future readers of the
    ticket, so keep what stays true after merge and drop the run itself:
@@ -302,24 +302,25 @@ opened (or saved). A stopped run never gets here.
    - Leave out: time spent and budget, CLI commands, review/QA round
      counts, loop caps, agent names, local paths (worktrees, state
      files), and decisions about the run itself (e.g. history rewrites).
-3. **Comment** it on the ticket: `addCommentToJiraIssue` with
-   `contentFormat: "markdown"`. Record the returned comment id in the
-   state file (`jira.commentId`). On a resume where it is already set,
-   update that comment (`commentId`) instead of adding a second one.
-4. **Transition** to Code Review: `getTransitionsForJiraIssue`, pick the
-   transition whose target status name is `Code Review` (case-insensitive),
-   then `transitionJiraIssue`. Already in Code Review → skip. No such
-   transition → do not pick another status; report the available ones
-   and leave the ticket where it is. A transition with a required screen
-   (`hasScreen: true`) that fails → report it, do not retry with guessed
-   fields.
-5. Record `jira.transitioned`, set `"stage":"complete"` and add one line
-   to the user: comment posted (link to the ticket) and the new status.
+3. **Comment** it on the ticket: the adapter's `add-or-update-comment`,
+   markdown. Record the returned comment id in the state file
+   (`tracker.commentId`). On a resume where it is already set, update
+   that comment instead of adding a second one.
+4. **Move to Code Review**: the adapter's `set-status(key, "Code
+   Review")`. Already in Code Review → skip. No matching status/mechanism
+   → do not pick another one; report what the adapter said (available
+   transitions for Jira; missing Projects-v2 board for GitHub) and leave
+   the ticket where it is. A failure the adapter flags as needing manual
+   input (e.g. Jira's `hasScreen: true`) → report it, do not retry with
+   guessed fields.
+5. Record `tracker.statusMoved`, set `"stage":"complete"` and add one
+   line to the user: comment posted (link to the ticket) and the new
+   status.
 
-A Jira call that fails (auth, permissions, MCP not connected) → report it
-with the drafted summary in the reply so the user can paste it, keep
-`"stage":"jira"`, and end. Never transition without the comment, and
-never comment or transition before the user's approval.
+A tracker call that fails (auth, permissions, MCP/CLI not connected) →
+report it with the drafted summary in the reply so the user can paste
+it, keep `"stage":"tracker"`, and end. Never move status without the
+comment, and never comment or move status before the user's approval.
 
 # Final Report
 
@@ -339,4 +340,4 @@ Open items: <unaddressed 🟡 with reasons, follow-up tickets suggested, risks>
 Resume (if stopped): /dev-team:development-pipeline <TICKET> --resume
 ```
 
-After a COMPLETE report, continue with stage 9 (Jira hand-off approval).
+After a COMPLETE report, continue with stage 9 (tracker hand-off approval).

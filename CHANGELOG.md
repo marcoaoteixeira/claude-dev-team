@@ -3,6 +3,34 @@
 All notable changes to the `dev-team` plugin are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the plugin follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Skill `tracker-detection`: identifies which work tracker a project uses
+  (Jira or GitHub Issues/Projects v2) from connected-tool evidence — an
+  Atlassian MCP vs an authenticated `github` MCP + `gh` CLI with the
+  `project` scope — never a declared setting. Defines a tracker-agnostic
+  operations vocabulary (`get-ticket`, `create-ticket`, `set-status`,
+  etc.) with one adapter doc per tracker mapping it onto real calls.
+  Wired into `product-owner`, `epic-brainstorm` and `development-pipeline`
+  in place of their previous inline Atlassian MCP calls, so the plugin no
+  longer assumes Jira. GitHub Projects v2 status moves go through the
+  `gh` CLI, since the connected GitHub MCP server has no Projects-v2
+  tool.
+
+### Changed
+
+- `epic-brainstorm`'s tracker-ready doc is now `<Slug>-Epic-Tracker.md`
+  (was `<Slug>-Epic-Jira.md`), built from the renamed
+  `references/epic-template.md` (was `jira-template.md`).
+- `development-pipeline`'s state file `jira` block renamed `tracker`
+  (`commentId`, `statusMoved`); stage 9 is now "Tracker hand-off".
+- `qa-engineer`, `software-architect` and the stack reviewer agents gained
+  `mcp__github__issue_read` alongside their existing Jira read tool;
+  `product-owner` gained the GitHub issue/search/sub-issue tool set
+  alongside its existing Atlassian one.
+
 ## [2.2.0] - 2026-10-22
 
 ### Added

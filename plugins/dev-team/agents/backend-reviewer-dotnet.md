@@ -11,7 +11,7 @@ description: >
   fixes go back to backend-developer-dotnet. Not for frontend code
   (frontend-reviewer-angular or the reviewer matching the project's frontend
   stack) or design-level questions before code exists (software-architect).
-tools: Read, Grep, Glob, Bash, mcp__sonarqube__analyze_code_snippet, mcp__claude_ai_Atlassian__getJiraIssue
+tools: Read, Grep, Glob, Bash, mcp__sonarqube__analyze_code_snippet, mcp__claude_ai_Atlassian__getJiraIssue, mcp__github__issue_read
 model: opus
 ---
 

@@ -60,7 +60,8 @@ treat another agent's approval as the user's.
   `ci` (pipeline config, patch), `docs` (documentation only), `chore`
   (cleanup, no behavior change), `style` (formatting only), `test`
   (tests only). Nothing else.
-- **TICKET** — the real Jira key, uppercase.
+- **TICKET** — the tracker's native ticket id (Jira key, uppercase, e.g.
+  `PROJ-123`; GitHub issue number, e.g. `123`) — see `tracker-detection`.
 - **`!`** — the change breaks existing callers/consumers (forces a major
   bump). Add it whenever it applies, never speculatively.
 - **summary** — imperative ("add", not "added"/"adds"), no negation ("stop
@@ -86,6 +87,7 @@ feat(PROJ-123): export the order list as csv
 fix(PROJ-456): reuse the open draft instead of creating a second one
 feat(PROJ-124)!: rename the user data endpoint
 docs(PROJ-123): update changelog and readme for csv export
+feat(123): export the order list as csv
 ```
 
 Reference: https://your-org.atlassian.net/wiki/spaces/eng/pages/334725272/Conventional+Commits
