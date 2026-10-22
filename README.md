@@ -1,12 +1,6 @@
 # dev-team
 
-Source repository and Claude Code plugin marketplace for **dev-team**: an agent team for .NET + Angular work, from shaping a Jira epic to a reviewed, QA-approved draft pull request.
-
-## Preview: the development pipeline
-
-What happens, and who is involved, when the team picks up a refined ticket. For the full page, open [`docs/development-pipeline.html`](docs/development-pipeline.html) in a browser after cloning (GitHub shows HTML files as source).
-
-![Development pipeline: stages 0 to 8 with the agents involved, what each stage produces, the build split and the guard rails](docs/development-pipeline.png)
+Source repository and Claude Code plugin marketplace for **dev-team**: an agent team that detects a project's tech stack (.NET or Kotlin/JVM backends; Angular or Android frontends) and takes a refined Jira ticket from design through UX, test-first implementation, review, QA and a draft pull request.
 
 ## What's inside
 
@@ -22,29 +16,39 @@ What happens, and who is involved, when the team picks up a refined ticket. For 
 
 | Agent | Role |
 |---|---|
-| `software-architect` | Design (plan, API contract, build split, ADRs) and design review |
+| `software-architect` | Design (plan, API contract, build split, UX-spec call, ADRs) and design review — any stack |
 | `product-owner` | Backlog refinement: epic breakdown, ticket critique |
+| `ux-specialist` | User research, flows, interaction/component specs, accessibility review, design-QA — stack-agnostic |
 | `qa-engineer` | Suggests test cases up front, verifies acceptance criteria are proven |
-| `backend-developer` | C#/.NET, test-first (xUnit) |
-| `frontend-developer` | Angular, test-first (Vitest) |
-| `backend-reviewer` | Read-only review of .NET diffs |
-| `frontend-reviewer` | Read-only review of Angular diffs |
+| `backend-developer-dotnet` | C#/.NET backend, test-first (xUnit) |
+| `backend-developer-kotlin` | Kotlin/JVM backend (Ktor/Spring), test-first (JUnit 5/Kotest) |
+| `backend-reviewer-dotnet` | Read-only review of .NET diffs |
+| `backend-reviewer-kotlin` | Read-only review of Kotlin/JVM diffs |
+| `frontend-developer-angular` | Angular, test-first (Vitest) |
+| `frontend-developer-android` | Android/Kotlin (Compose), test-first (JUnit, Turbine) |
+| `frontend-reviewer-angular` | Read-only review of Angular diffs |
+| `frontend-reviewer-android` | Read-only review of Android diffs |
+
+Which backend/frontend pair gets used on a given project is decided by `stack-detection` from repo file markers — never guessed, never read off a README that could be stale.
 
 ### Skills
 
 | Skill | Use |
 |---|---|
 | `development-pipeline` | Deliver one refined ticket end to end with the agents (manual only) |
+| `stack-detection` | Identify a project's backend/frontend stack from repo markers, map to the matching agent pair |
 | `epic-brainstorm` | Shape a Jira epic with the user, then refine it into tickets |
 | `product-owner` | Refine or critique a single ticket |
 | `developer-brainstorm` | Explore a rough feature idea before a design exists |
 | `development-council` | Deliberate a hard architecture fork with several architect views |
 | `adr-writer` | Draft an ADR for a qualifying decision |
-| `delivery-conventions` | Branches, commits, CHANGELOG, README, where docs go |
+| `delivery-conventions` | Branches, commits, CHANGELOG, README, where plans/specs/ADRs/UX docs go |
 | `pr-writer` | Write and open the PR (Bitbucket API or saved file) |
 | `sonarqube-check` | Check a branch/PR against the SonarQube quality gate |
 | `angular-testing` | Angular unit-testing conventions (Vitest, Testing Library) |
+| `android-testing` | Android/Kotlin testing conventions (MockK, Turbine, Compose UI tests) |
 | `xunit` | xUnit best practices |
+| `kotlin-testing` | Kotlin/JVM backend testing conventions (JUnit 5/Kotest, MockK, coroutine tests) |
 
 ### Hook
 
@@ -62,7 +66,7 @@ Requirements:
 From a local clone:
 
 ```sh
-claude plugin marketplace add C:/Workspace/ClaudeRepo
+claude plugin marketplace add C:/Workspace/DevTeam
 claude plugin install dev-team@nameless-marketplace --scope user
 ```
 
@@ -84,11 +88,17 @@ Agents: `@agent-dev-team:software-architect`, or let the skills launch them.
 
 ## Develop
 
-Edit the files under `plugins/dev-team/`, then:
+Every change starts on a new branch off an up-to-date `main` (never commit
+to `main` directly — a repository rule rejects it): `<kind>/CDT-XXXX-<slug>`,
+`kind` = `feature`|`fix`|`chore`|`refactor`|`docs`, `CDT-XXXX` the next
+4-digit ticket key (this repo has no tracker wired up). Edit the files
+under `plugins/dev-team/`, then:
 
 1. Bump `version` in `plugins/dev-team/.claude-plugin/plugin.json`. Installed copies only update when the version changes.
 2. Add an entry to `CHANGELOG.md`.
 3. Validate: `claude plugin validate .`
-4. Try it locally: `claude plugin marketplace update nameless-marketplace`, then restart Claude Code.
+4. Commit with Conventional Commits, scoped to the `CDT-XXXX` key, e.g. `feat(CDT-0005): add X`.
+5. Push the branch and open a PR back to `main`.
+6. Try it locally: `claude plugin marketplace update nameless-marketplace`, then restart Claude Code.
 
 Conventions for editing the files are in `CLAUDE.md`.
