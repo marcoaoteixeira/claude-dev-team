@@ -3,6 +3,15 @@
 All notable changes to the `dev-team` plugin are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the plugin follows [Semantic Versioning](https://semver.org/).
 
+## [2.2.0] - 2026-10-22
+
+### Added
+
+- Agent `ux-specialist`: user research, flows, interaction/component specs, accessibility review, and design-QA of implemented UI against its own spec. Stack-agnostic — serves Angular and Android frontends alike. Modes: `spec`, `design-qa`, `guidance`.
+- `software-architect` design mode now returns a `UX spec needed: YES|NO` verdict, same standing as the ADR call.
+- `development-pipeline`: optional stage 1b runs `ux-specialist` (mode spec) when the architect says a UX spec is needed; the frontend developer builds against it alongside the API contract; `ux-specialist` (mode design-qa) runs alongside the frontend reviewer in the review loop and its findings merge into the same `fix-findings` round. State file gained a `ux` block (`specNeeded`, `specPath`, `designQa`).
+- `delivery-conventions` §6: where UX research/flows/specs/reviews/decisions-log documents go, following the same project-declared → existing-folder → default-root precedence as §5.
+
 ## [2.1.0] - 2026-10-22
 
 ### Added
