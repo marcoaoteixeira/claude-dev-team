@@ -2,6 +2,10 @@
 
 Source repository and Claude Code plugin marketplace for **dev-team**: an agent team that detects a project's tech stack (.NET or Kotlin/JVM backends; Angular or Android frontends) and takes a refined Jira ticket from design through UX, test-first implementation, review, QA and a draft pull request.
 
+## Preview: the development pipeline
+
+Who's involved at each stage, what branches the flow, and the guard rails that keep it from running away unattended: **[development-pipeline.html](https://marcoaoteixeira.github.io/claude-dev-team/development-pipeline.html)** (once GitHub Pages is enabled for this repo — Settings → Pages → Source: `main` / `/docs`). Until then, open [`docs/development-pipeline.html`](docs/development-pipeline.html) locally after cloning.
+
 ## What's inside
 
 | Path | What |

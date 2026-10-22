@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dev-team · development-pipeline</title>
+<meta name="description" content="How the dev-team plugin's development-pipeline skill takes a refined Jira ticket from design to a draft pull request.">
+<style>
+  :root {
+    --bg: #f7f7f8;
+    --surface: #ffffff;
+    --surface-2: #f0f1f3;
+    --border: #d9dce1;
+    --text: #1b1f24;
+    --text-dim: #5b6270;
+    --accent: #2f6fed;
+    --accent-weak: #e8f0fe;
+    --arch: #6a4cff;
+    --po: #d6872e;
+    --ux: #e0548a;
+    --qa: #1f9e6d;
+    --be: #2f6fed;
+    --fe: #0ea5a5;
+    --conductor: #3a3f4b;
+    --warn-bg: #fff4e5;
+    --warn-border: #f0b85c;
+    --warn-text: #7a4b00;
+    --code-bg: #eef0f3;
+    --shadow: 0 1px 2px rgba(20,22,28,0.06), 0 4px 14px rgba(20,22,28,0.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161a;
+      --surface: #1b1e24;
+      --surface-2: #20242b;
+      --border: #30343d;
+      --text: #e7e9ec;
+      --text-dim: #9aa1ad;
+      --accent: #6d9bff;
+      --accent-weak: #1c2a4a;
+      --arch: #a48bff;
+      --po: #e5a24f;
+      --ux: #f080ab;
+      --qa: #3fc98c;
+      --be: #6d9bff;
+      --fe: #3fd2d2;
+      --conductor: #c7cbd4;
+      --warn-bg: #3a2c0f;
+      --warn-border: #7a5a1c;
+      --warn-text: #f0c879;
+      --code-bg: #20242b;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 18px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161a;
+    --surface: #1b1e24;
+    --surface-2: #20242b;
+    --border: #30343d;
+    --text: #e7e9ec;
+    --text-dim: #9aa1ad;
+    --accent: #6d9bff;
+    --accent-weak: #1c2a4a;
+    --arch: #a48bff;
+    --po: #e5a24f;
+    --ux: #f080ab;
+    --qa: #3fc98c;
+    --be: #6d9bff;
+    --fe: #3fd2d2;
+    --conductor: #c7cbd4;
+    --warn-bg: #3a2c0f;
+    --warn-border: #7a5a1c;
+    --warn-text: #f0c879;
+    --code-bg: #20242b;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 18px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 0 16px 64px;
+  }
+  main { max-width: 980px; margin: 0 auto; }
+  code, .mono { font: 13.5px/1.4 ui-monospace, "SF Mono", Consolas, "Cascadia Code", monospace; }
+
+  header.page {
+    padding: 48px 0 20px;
+  }
+  h1 { font-size: 28px; margin: 0 0 8px; letter-spacing: -0.01em; }
+  .sub { color: var(--text-dim); font-size: 16px; max-width: 760px; }
+  .toolbar { display: flex; gap: 8px; align-items: center; margin-top: 20px; flex-wrap: wrap; }
+  .toolbar button {
+    font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 7px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    cursor: pointer;
+  }
+  .toolbar button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+
+  section { margin-top: 44px; }
+  h2 { font-size: 20px; margin: 0 0 14px; }
+  h3 { font-size: 15px; margin: 0 0 6px; }
+  p { margin: 0 0 10px; }
+  .lede { color: var(--text-dim); margin-bottom: 20px; max-width: 760px; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 10px 18px; padding: 14px 16px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  }
+  .legend .item { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--text-dim); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+
+  .flow { display: flex; flex-direction: column; gap: 0; position: relative; }
+  .stage {
+    display: grid; grid-template-columns: 56px 1fr; gap: 16px;
+    padding: 18px 0;
+    border-top: 1px solid var(--border);
+    position: relative;
+  }
+  .flow .stage:first-child { border-top: none; }
+  .stage .num {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--surface-2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 14px; color: var(--text-dim);
+  }
+  .stage.optional .num { border-style: dashed; }
+  .stage-body { min-width: 0; }
+  .stage-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .stage-head h3 { margin: 0; }
+  .tag {
+    font-size: 11px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 999px; color: #fff; line-height: 1.6;
+  }
+  .tag.optional-tag { background: transparent; color: var(--text-dim); border: 1px dashed var(--border); text-transform: none; font-weight: 500; }
+  .actors { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  .actor {
+    font-size: 12.5px; font-weight: 600; padding: 3px 9px; border-radius: 7px; color: #fff;
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  }
+  .stage-desc { color: var(--text); font-size: 14.5px; }
+  .stage-desc .dim { color: var(--text-dim); }
+  .produces {
+    margin-top: 10px; padding: 10px 12px; background: var(--surface-2); border-radius: 8px;
+    font-size: 13px; color: var(--text-dim);
+  }
+  .produces b { color: var(--text); font-weight: 600; }
+
+  .actor.arch { background: var(--arch); }
+  .actor.po { background: var(--po); }
+  .actor.ux { background: var(--ux); }
+  .actor.qa { background: var(--qa); }
+  .actor.be { background: var(--be); }
+  .actor.fe { background: var(--fe); }
+  .actor.conductor { background: var(--conductor); }
+
+  .branch {
+    margin-top: 12px; border-left: 2px solid var(--border); padding-left: 14px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .branch .opt { font-size: 13.5px; }
+  .branch .opt b { color: var(--text); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; box-shadow: var(--shadow);
+  }
+  .card h3 { font-size: 14px; margin-bottom: 6px; }
+  .card p { font-size: 13.5px; color: var(--text-dim); margin: 0; }
+
+  .guard {
+    background: var(--warn-bg); border: 1px solid var(--warn-border); color: var(--warn-text);
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; font-size: 14px;
+  }
+  .guard b { color: inherit; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--text-dim); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: .02em; }
+
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 13px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  @media (max-width: 640px) {
+    .stage { grid-template-columns: 36px 1fr; }
+    .stage .num { width: 32px; height: 32px; font-size: 12px; }
+    h1 { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<header class="page">
+  <h1>development-pipeline</h1>
+  <p class="sub">How the <code>dev-team</code> plugin takes one refined Jira ticket from design to a reviewed, QA-approved draft pull request — who's involved at each stage, what branches the flow, and what stops it from running away unattended.</p>
+  <div class="toolbar">
+    <button type="button" data-theme-btn="light" aria-pressed="false">Light</button>
+    <button type="button" data-theme-btn="dark" aria-pressed="false">Dark</button>
+    <button type="button" data-theme-btn="system" aria-pressed="true">System</button>
+  </div>
+</header>
+
+<section>
+  <h2>Who's on the team</h2>
+  <p class="lede">Which backend/frontend developer and reviewer actually get invoked depends on the project's detected stack (<code>stack-detection</code>) — the diagram below shows roles, not fixed agent names.</p>
+  <div class="legend">
+    <span class="item"><span class="dot" style="background:var(--conductor)"></span>development-pipeline (conductor)</span>
+    <span class="item"><span class="dot" style="background:var(--arch)"></span>software-architect</span>
+    <span class="item"><span class="dot" style="background:var(--ux)"></span>ux-specialist <em>(optional)</em></span>
+    <span class="item"><span class="dot" style="background:var(--qa)"></span>qa-engineer</span>
+    <span class="item"><span class="dot" style="background:var(--be)"></span>backend developer/reviewer</span>
+    <span class="item"><span class="dot" style="background:var(--fe)"></span>frontend developer/reviewer</span>
+  </div>
+</section>
+
+<section>
+  <h2>The run</h2>
+  <p class="lede">Stages run in order; the conductor enforces gates, loop caps and a time budget, and never writes production code, tests or design documents itself.</p>
+
+  <div class="flow">
+
+    <div class="stage">
+      <div class="num">0</div>
+      <div class="stage-body">
+        <div class="stage-head"><h3>Start-up</h3></div>
+        <div class="actors"><span class="actor conductor">conductor</span></div>
+        <p class="stage-desc">Load the ticket (needs testable acceptance criteria — not refined → stop). Repo preflight: clean working tree, default branch, <b>stack detection</b> (file markers, not a README claim — ambiguous or unsupported → ask or stop). Branch per <code>delivery-conventions</code>, write the state file.</p>
+        <div class="produces"><b>Produces:</b> branch, worktree, <code>state.json</code> (ticket, budget, detected stack)</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="num">1</div>
+      <div class="stage-body">
+        <div class="stage-head"><h3>Design</h3></div>
+        <div class="actors"><span class="actor arch">software-architect</span></div>
+        <p class="stage-desc">Plan, API contract, work-split verdict (<span class="dim">PARALLEL / BACKEND-FIRST / BACKEND-ONLY / FRONTEND-ONLY</span>), ADRs when a decision qualifies, and a <b>UX-spec-needed</b> call.</p>
+        <div class="branch">
+          <div class="opt"><b>1b · UX spec</b> — only if the architect said YES: <span class="actor ux" style="margin-left:2px">ux-specialist</span> writes flows, states, interaction and accessibility specs the frontend developer builds against alongside the contract.</div>
+        </div>
+        <div class="produces"><b>Produces:</b> plan, contract, ADRs, UX spec (conditional)</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="num">2</div>
+      <div class="stage-body">
+        <div class="stage-head"><h3>Test cases</h3></div>
+        <div class="actors"><span class="actor qa">qa-engineer</span></div>
+        <p class="stage-desc">From the ticket and the architect's plan/contract: backend and frontend case tables — acceptance coverage plus the failure modes that actually matter (dependency down, timeout, concurrency, auth).</p>
+        <div class="produces"><b>Produces:</b> agreed test cases, folded into each developer's brief</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="num">3</div>
+      <div class="stage-body">
+        <div class="stage-head"><h3>Build</h3></div>
+        <div class="actors"><span class="actor be">backend developer</span><span class="actor fe">frontend developer</span></div>
+        <p class="stage-desc">Test-first, per the architect's work-split verdict:</p>
+        <table>
+          <tr><th>Split</th><th>Shape</th></tr>
+          <tr><td>BACKEND-ONLY / FRONTEND-ONLY</td><td>One developer, one worktree.</td></tr>
+          <tr><td>BACKEND-FIRST</td><td>Backend built, reviewed and QA'd first; frontend follows in the same worktree.</td></tr>
+          <tr><td>PARALLEL</td><td>Backend and frontend launch together in separate worktrees (frontend builds on mocked contract), then merge and integrate once backend QA passes.</td></tr>
+        </table>
+        <div class="produces"><b>Produces:</b> commits at green, per-developer report (<code>DONE</code> / <code>NEEDS-DECISION</code> / <code>BLOCKED</code>)</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="num">4</div>
+      <div class="stage-body">
+        <div class="stage-head"><h3>Review loop</h3> <span class="tag optional-tag">capped at 3 rounds per side</span></div>
+        <div class="actors"><span class="actor be">backend reviewer</span><span class="actor fe">frontend reviewer</span><span class="actor ux">ux-specialist (design-QA)</span></div>
+        <p class="stage-desc">Read-only diff review against the AC and contract. When a UX spec exists, <code>ux-specialist</code> design-QAs the built UI in the same round — its findings merge with the frontend reviewer's into one <code>fix-findings</code> pass, not two. A disputed finding goes to the reviewer in <b>verify</b> mode (fresh agent) to decide.</p>
+        <div class="produces"><b>Produces:</b> <code>PASS</code> or <code>CHANGES-REQUIRED</code> per side; <code>lastReviewed</code> commit recorded on pass</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="num">5</div>
+      <div class="stage-body">
+        <div class="stage-head"><h3>QA loop</h3> <span class="tag optional-tag">capped at 2 rounds per side</span></div>
+        <div class="actors"><span class="actor qa">qa-engineer</span></div>
+        <p class="stage-desc">Verifies the agreed cases are actually proven by tests that run — not just present. <code>CHANGES-REQUIRED</code> sends the developer back in <b>add-tests</b> mode, then back through review.</p>
+        <div class="produces"><b>Produces:</b> <code>APPROVED</code> or <code>CHANGES-REQUIRED</code> per side</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="num">6</div>
+      <div class="stage-body">
+        <div class="stage-head"><h3>Review marker</h3></div>
+        <div class="actors"><span class="actor conductor">conductor</span></div>
+        <p class="stage-desc">Once every side is reviewed and QA-approved at the same commit, the conductor writes a signed marker. A later non-Markdown commit invalidates it automatically.</p>
+        <div class="produces"><b>Produces:</b> <code>.claude/state/reviews/&lt;branch&gt;.json</code> — the input the push-gate hook checks</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="num">7</div>
+      <div class="stage-body">
+        <div class="stage-head"><h3>Finalize</h3></div>
+        <div class="actors"><span class="actor be">developer</span><span class="actor fe">developer</span></div>
+        <p class="stage-desc">The developer whose work landed last updates CHANGELOG/README/guides, commits, pushes the branch, and opens a <b>draft</b> PR (<code>pr-writer</code>) — or saves it as a file if no PR token is configured.</p>
+        <div class="produces"><b>Produces:</b> pushed branch, draft PR (or saved PR file)</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="num">8</div>
+      <div class="stage-body">
+        <div class="stage-head"><h3>Clean up &amp; report</h3></div>
+        <div class="actors"><span class="actor conductor">conductor</span></div>
+        <p class="stage-desc">Remove the worktree(s), print the Final Report: what was built, acceptance criteria → tests, documents, deviations, decisions taken on the user's behalf, open items.</p>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="num">9</div>
+      <div class="stage-body">
+        <div class="stage-head"><h3>Jira hand-off</h3> <span class="tag optional-tag">needs user approval</span></div>
+        <div class="actors"><span class="actor conductor">conductor</span></div>
+        <p class="stage-desc">Only after the user explicitly approves — never an agent's verdict: posts a condensed summary comment on the ticket and transitions it to Code Review.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <h2>Guard rails</h2>
+  <div class="guard"><b>Review-gate hook.</b> <code>require-review.cjs</code> denies <code>git push</code> unless a passed review-and-QA marker exists for the exact commit being pushed. Direct pushes to the default branch are always denied.</div>
+  <div class="guard"><b>Loop caps.</b> Review: 3 rounds per side. QA: 2 rounds per side. Still failing past the cap → stop and report the open findings, never loop silently.</div>
+  <div class="guard"><b>Time budget.</b> Default 3h, resumable. At every stage boundary the conductor checks spent time against the budget and stops cleanly — committed work stays committed — rather than starting a stage it can't finish.</div>
+  <div class="guard"><b>NEEDS-DECISION escalation.</b> Scope/AC changes, conflicts with an accepted ADR, new external dependencies, destructive actions, and the stage-9 approval always go to the user — never answered by another agent's verdict.</div>
+</section>
+
+<section>
+  <h2>Stack detection</h2>
+  <p class="lede">Which developer/reviewer pair actually runs is resolved once, from file markers, not assumed and not read off a README that could be stale.</p>
+  <div class="cards">
+    <div class="card"><h3>.NET backend</h3><p><code>*.csproj</code>, <code>*.sln</code>, or a <code>global.json</code> with an <code>sdk</code> key.</p></div>
+    <div class="card"><h3>Kotlin/JVM backend</h3><p><code>build.gradle.kts</code> with Kotlin sources, no Android markers in the same module.</p></div>
+    <div class="card"><h3>Angular frontend</h3><p><code>angular.json</code>.</p></div>
+    <div class="card"><h3>Android frontend</h3><p><code>build.gradle.kts</code> and an <code>AndroidManifest.xml</code> under an app/module folder.</p></div>
+  </div>
+  <p style="margin-top:14px" class="lede">Ambiguous markers, an empty/new project, or a detected stack with no agent pair yet → the pipeline asks once or stops; it never substitutes the nearest existing pair.</p>
+</section>
+
+<footer>
+  Source: <a href="https://github.com/marcoaoteixeira/claude-dev-team">github.com/marcoaoteixeira/claude-dev-team</a> — see <code>plugins/dev-team/skills/development-pipeline/SKILL.md</code> for the full, authoritative spec.
+</footer>
+
+</main>
+
+<script>
+(function () {
+  try {
+    var root = document.documentElement;
+    var saved = localStorage.getItem('dp-theme');
+    var buttons = document.querySelectorAll('[data-theme-btn]');
+
+    function apply(mode) {
+      if (mode === 'light') root.setAttribute('data-theme', 'light');
+      else if (mode === 'dark') root.setAttribute('data-theme', 'dark');
+      else root.removeAttribute('data-theme');
+      buttons.forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.getAttribute('data-theme-btn') === mode));
+      });
+    }
+
+    var initial = saved || 'system';
+    apply(initial);
+
+    buttons.forEach(function (b) {
+      b.addEventListener('click', function () {
+        var mode = b.getAttribute('data-theme-btn');
+        apply(mode);
+        try { localStorage.setItem('dp-theme', mode); } catch (e) {}
+      });
+    });
+  } catch (e) {
+    // localStorage unavailable (private window, blocked storage) — page still renders with system theme.
+  }
+})();
+</script>
+
+</body>
+</html>
