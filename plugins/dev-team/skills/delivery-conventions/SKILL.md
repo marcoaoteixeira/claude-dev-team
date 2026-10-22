@@ -1,6 +1,6 @@
 ---
 name: delivery-conventions
-description: Shared delivery rules for the developer agents and development-pipeline — branch naming, Conventional Commits, CHANGELOG (Keep a Changelog), README and developer-guide upkeep, and where plans/specs/ADRs are stored. Use when creating a branch, writing a commit message, finishing a ticket, or deciding where a plan, spec or ADR file goes. The project's own rules (CLAUDE.md, README, commitlint config, existing folders) always win over these defaults.
+description: Shared delivery rules for the developer agents and development-pipeline — branch naming, Conventional Commits, CHANGELOG (Keep a Changelog), README and developer-guide upkeep, and where plans/specs/ADRs/UX documents are stored. Use when creating a branch, writing a commit message, finishing a ticket, or deciding where a plan, spec, ADR or UX document goes. The project's own rules (CLAUDE.md, README, commitlint config, existing folders) always win over these defaults.
 ---
 
 # Delivery Conventions
@@ -181,3 +181,30 @@ Never scatter documents in the codebase. Resolve the location in this order:
 - If the location is git-ignored (`git check-ignore <path>`), that is the
   project's choice — write there, never force-add it, and mention it in
   your summary.
+
+## 6. Where documents go — UX research, flows, specs and reviews
+
+Same resolution order as §5, applied to `ux-specialist`'s output:
+
+1. **Declared by the project** (CLAUDE.md / README) → use it.
+2. **Existing UX docs folder** — the nearest one to the frontend code
+   (`docs/ux/`, `documentation/ux/`, an app-level `ux/`) → use its layout.
+3. **Nothing exists** → create under the repo's existing docs root
+   (`docs/` or `documentation/`, whichever exists; neither exists →
+   `documentation/`):
+   ```
+   <docs root>/ux/
+     research/   # research plans, findings, personas, journey maps
+     flows/      # user flows and task analyses
+     specs/      # per-feature UX specs and component specs
+     reviews/    # accessibility audits and design-QA reports
+     decisions.md  # running log of UX decisions and rationale
+   ```
+
+- File name inside `specs/`, `flows/`, `research/`, `reviews/`:
+  `<TICKET>-<slug>.md` (same pattern as §5). A standing component spec
+  with no single ticket owner: `<component-name>.md`.
+- `decisions.md` is one running log, not per-ticket — append a dated entry,
+  never create a second decisions file.
+- If the location is git-ignored, write there anyway and say so in the
+  summary (same rule as §5).

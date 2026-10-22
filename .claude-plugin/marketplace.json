@@ -6,7 +6,7 @@
     {
       "name": "dev-team",
       "source": "./plugins/dev-team",
-      "description": "Agent dev team with stack detection (currently .NET/Kotlin backends, Angular/Android frontends): architect, product owner, stack-specific developers and reviewers, and QA, plus the pipeline that delivers a refined Jira ticket to a draft PR."
+      "description": "Agent dev team with stack detection (currently .NET/Kotlin backends, Angular/Android frontends): architect, product owner, ux-specialist, stack-specific developers and reviewers, and QA, plus the pipeline that delivers a refined Jira ticket to a draft PR."
     }
   ]
 }

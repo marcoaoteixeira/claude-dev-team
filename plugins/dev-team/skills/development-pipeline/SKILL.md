@@ -1,6 +1,6 @@
 ---
 name: development-pipeline
-description: Deliver one refined Jira ticket end to end with the agent team — stack-detection identifies each side's tech stack, software-architect designs (plan, API contract, ADRs), qa-engineer sets the test cases, the matching stack-specific backend/frontend developer agents build test-first (in parallel worktrees when the contract allows, otherwise backend first), their reviewer agents review, qa-engineer verifies, then the branch is pushed and a draft PR opened (or saved as a file); once the user approves, a condensed summary is commented on the Jira ticket and it moves to Code Review. Runs unattended within a time budget (default 3h), resumable. Manual invocation only — "/dev-team:development-pipeline PROJ-123 [2h] [--resume]".
+description: Deliver one refined Jira ticket end to end with the agent team — stack-detection identifies each side's tech stack, software-architect designs (plan, API contract, ADRs, and whether a UX spec is needed), ux-specialist specs user-facing flows when the architect says so, qa-engineer sets the test cases, the matching stack-specific backend/frontend developer agents build test-first (in parallel worktrees when the contract allows, otherwise backend first), their reviewer agents review (ux-specialist design-QAs the UI alongside the frontend reviewer when a spec exists), qa-engineer verifies, then the branch is pushed and a draft PR opened (or saved as a file); once the user approves, a condensed summary is commented on the Jira ticket and it moves to Code Review. Runs unattended within a time budget (default 3h), resumable. Manual invocation only — "/dev-team:development-pipeline PROJ-123 [2h] [--resume]".
 argument-hint: <TICKET> [budget e.g. 3h] [--resume]
 disable-model-invocation: true
 ---
@@ -13,7 +13,8 @@ file, watch the clock and report. You never write production code, tests
 or design documents yourself. You do run git plumbing (fetch, branch,
 worktrees, merges, the review marker) because that is orchestration.
 
-Team: `software-architect`, `qa-engineer`, and whichever stack-specific
+Team: `software-architect`, `qa-engineer`, `ux-specialist` (only when the
+architect says a UX spec is needed), and whichever stack-specific
 developer/reviewer agents `stack-detection` maps the project to (today:
 `backend-developer-dotnet` / `backend-reviewer-dotnet` or
 `backend-developer-kotlin` / `backend-reviewer-kotlin` for the backend;
@@ -101,6 +102,7 @@ one as `dev-team:<name>` (e.g. `subagent_type: dev-team:backend-developer-dotnet
    {"ticket":"PROJ-123","branch":"feature/PROJ-123-x","base":"main",
     "budgetMinutes":180,"spentMinutes":0,"stageStartedAt":null,
     "stack":{"backend":"dotnet","frontend":"angular"},
+    "ux":{"specNeeded":false,"specPath":null,"designQa":null},
     "split":null,"worktrees":{},"stage":"design","done":[],
     "loops":{"beReview":0,"feReview":0,"beQa":0,"feQa":0},
     "lastReviewed":{"be":null,"fe":null},
@@ -137,10 +139,25 @@ the stack detected in step 5 (so it doesn't re-detect), "write documents
 there, do not commit". Result:
 - `NEEDS-DECISION` → rule 2 applies → ask the user; otherwise take the
   recommendation. Re-run design with the answer if it changes the plan.
-- Record `split`, documents, contract summary, task lists, risks.
-- Commit the documents in WT-main if they are not git-ignored:
-  `docs(<TICKET>): add plan and contract` (validate with commitlint per
-  delivery-conventions). Ignored docs → note it.
+- Record `split`, documents, contract summary, task lists, risks, and
+  `ux.specNeeded` from the architect's verdict.
+
+### 1b. UX spec — `ux-specialist` (mode: spec) — only if `ux.specNeeded`
+
+Prompt: ticket (full text + AC), WT-main path, the architect's plan/contract
+(constraints, data shape), "write documents there, do not commit".
+- `NEEDS-DECISION` → rule 2 applies → ask the user; otherwise take the
+  recommendation.
+- Record `ux.specPath`. It joins the frontend developer's brief in stage 3
+  alongside the architect's contract — the frontend developer builds
+  against both.
+- `ux.specNeeded` is false → skip this step entirely; nothing downstream
+  references a UX spec that doesn't exist.
+
+Commit the documents (architect's plan/contract and, if produced, the UX
+spec) in WT-main if they are not git-ignored: `docs(<TICKET>): add plan
+and contract` (validate with commitlint per delivery-conventions). Ignored
+docs → note it.
 
 ## 2. Test cases — `qa-engineer` (mode: suggest)
 
@@ -153,7 +170,9 @@ recommended answer unless rule 2 applies; record. The `must` cases (and
 
 Every developer brief contains: ticket + AC, plan/contract paths, its
 task list, its QA cases, the branch/worktree to work in ("work only
-there"), mode, and "do not push".
+there"), mode, and "do not push". The frontend developer's brief also
+gets `ux.specPath` when one exists — build against it alongside the
+contract.
 
 Each developer below is the one `stack.backend` / `stack.frontend` maps
 to per stack-detection (e.g. `backend-developer-dotnet`,
@@ -202,14 +221,22 @@ The matching reviewer agent for that side's stack (e.g. `backend-reviewer-dotnet
 worktree, base = the last reviewed commit for this side (first time: the
 merge-base with `origin/<default>`), ticket AC, plan/contract.
 
-- **PASS** with no top suggestions open → record `lastReviewed` =
-  HEAD of that worktree; done.
-- **CHANGES-REQUIRED**, or top suggestions to address → developer mode
-  `fix-findings` with every 🔴 and the top 3–5 suggestions ("fix, or
-  answer with a reason"). A developer who disputes a 🔴 → the reviewer in
-  **verify** mode (fresh agent) on that finding decides.
-- Re-review covers the new commits. **Cap: 3 rounds** per side. Still
-  failing → stop and report with the open findings.
+**Frontend side, when `ux.specPath` is set**: also launch `ux-specialist`
+(mode design-qa) in the same message — prompt: the worktree, `ux.specPath`,
+ticket AC. Merge its 🔴/🟡 findings with the stack reviewer's into one
+`fix-findings` round (don't run two separate fix rounds for one commit
+set). Record its verdict in `ux.designQa`.
+
+- **PASS** (and design-qa PASS, when run) with no top suggestions open →
+  record `lastReviewed` = HEAD of that worktree; done.
+- **CHANGES-REQUIRED** from either, or top suggestions to address →
+  developer mode `fix-findings` with every 🔴 from both reports and the
+  top 3–5 suggestions ("fix, or answer with a reason"). A developer who
+  disputes a 🔴 → the reviewer that raised it, in **verify** mode (fresh
+  agent), decides.
+- Re-review covers the new commits (both the stack reviewer and, if it
+  ran, `ux-specialist`). **Cap: 3 rounds** per side. Still failing → stop
+  and report with the open findings.
 
 Run backend and frontend reviews concurrently when both are pending.
 
@@ -304,7 +331,7 @@ Stages: design ✅ · QA cases ✅ · backend ✅ (review 2 rounds, QA 1) · fro
 
 What was built: <3–6 bullets in product terms>
 Acceptance criteria: AC1 ✅ <test> · AC2 ✅ … · manual checks pending: …
-Documents: <plan / spec / ADR paths> (git-ignored: yes/no)
+Documents: <plan / spec / ADR / UX spec paths> (git-ignored: yes/no)
 Contract deviations / drift: <none | list>
 Decisions taken on your behalf: <list with who recommended it>
 Project gates not stopped at: <from CLAUDE.md>

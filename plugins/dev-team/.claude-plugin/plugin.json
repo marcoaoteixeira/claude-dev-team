@@ -1,8 +1,8 @@
 {
   "name": "dev-team",
   "displayName": "Dev Team",
-  "version": "2.1.0",
-  "description": "Agent dev team with stack detection (currently .NET/Kotlin backends, Angular/Android frontends): architect, product owner, stack-specific developers and reviewers, and QA, plus the pipeline that delivers a refined Jira ticket to a draft PR.",
+  "version": "2.2.0",
+  "description": "Agent dev team with stack detection (currently .NET/Kotlin backends, Angular/Android frontends): architect, product owner, ux-specialist, stack-specific developers and reviewers, and QA, plus the pipeline that delivers a refined Jira ticket to a draft PR.",
   "author": { "name": "Marco Teixeira" },
-  "keywords": ["agents", "development-pipeline", "dotnet", "angular", "kotlin", "android", "jira", "bitbucket", "adr", "tdd"]
+  "keywords": ["agents", "development-pipeline", "dotnet", "angular", "kotlin", "android", "ux", "accessibility", "jira", "bitbucket", "adr", "tdd"]
 }
