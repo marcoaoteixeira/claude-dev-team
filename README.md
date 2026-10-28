@@ -25,13 +25,11 @@ Who's involved at each stage, what branches the flow, and the guard rails that k
 | `ux-specialist` | User research, flows, interaction/component specs, accessibility review, design-QA — stack-agnostic |
 | `qa-engineer` | Suggests test cases up front, verifies acceptance criteria are proven |
 | `backend-developer-dotnet` | C#/.NET backend, test-first (xUnit) |
-| `backend-developer-kotlin` | Kotlin/JVM backend (Ktor/Spring), test-first (JUnit 5/Kotest) |
 | `backend-reviewer-dotnet` | Read-only review of .NET diffs |
-| `backend-reviewer-kotlin` | Read-only review of Kotlin/JVM diffs |
 | `frontend-developer-angular` | Angular, test-first (Vitest) |
-| `frontend-developer-android` | Android/Kotlin (Compose), test-first (JUnit, Turbine) |
 | `frontend-reviewer-angular` | Read-only review of Angular diffs |
-| `frontend-reviewer-android` | Read-only review of Android diffs |
+| `kotlin-android-developer` | Kotlin/JVM backend (Ktor/Spring) **and** Android/Kotlin app (Compose), test-first (JUnit 5/Kotest, Turbine) — one developer for both sides |
+| `kotlin-android-reviewer` | Read-only review of Kotlin backend and/or Android diffs |
 
 Which backend/frontend pair gets used on a given project is decided by `stack-detection` from repo file markers — never guessed, never read off a README that could be stale.
 

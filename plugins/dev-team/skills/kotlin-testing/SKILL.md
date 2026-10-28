@@ -1,6 +1,6 @@
 ---
 name: kotlin-testing
-description: Kotlin/JVM backend testing conventions with JUnit 5, Kotest assertions, MockK and kotlinx-coroutines-test. Use whenever writing, fixing or reviewing test files in a Kotlin backend (Ktor, Spring Boot, plain JVM services), or working test-first on Kotlin code — consulted by backend-developer-kotlin, backend-reviewer-kotlin and qa-engineer. The project's own testing conventions (README Testing section, ADRs, existing tests) always win over these defaults.
+description: Kotlin/JVM backend testing conventions with JUnit 5, Kotest assertions, MockK and kotlinx-coroutines-test. Use whenever writing, fixing or reviewing test files in a Kotlin backend (Ktor, Spring Boot, plain JVM services), or working test-first on Kotlin code — consulted by kotlin-android-developer, kotlin-android-reviewer and qa-engineer. The project's own testing conventions (README Testing section, ADRs, existing tests) always win over these defaults.
 ---
 
 # Kotlin Backend Testing
