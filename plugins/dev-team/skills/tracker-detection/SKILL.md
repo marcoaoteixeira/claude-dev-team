@@ -22,6 +22,14 @@ report it rather than guessing between the two above.
 
 # Procedure
 
+0. **Check for a recorded result first**: a `## Dev-Team Detected Facts`
+   section in the project's `CLAUDE.md` (or `README.md` if no `CLAUDE.md`)
+   with a `Tracker:` line. Found → use it, skip the evidence checks below
+   — unless the recorded tracker's evidence no longer holds (e.g. the MCP
+   it named is no longer connected), in which case treat it as stale,
+   re-detect, and update the record. This is why which tracker a project
+   uses should be checked once per project, not re-asked or re-detected on
+   every invocation.
 1. Check Atlassian MCP evidence, then GitHub MCP + `gh` evidence,
    independently.
 2. **Exactly one tracker has evidence** → that tracker, done.
@@ -72,3 +80,25 @@ One line: `tracker: <id> → ${CLAUDE_PLUGIN_ROOT}/skills/tracker-detection/refe
 
 The caller loads that adapter doc once per run and uses it for every
 operation above instead of re-detecting or calling a raw API directly.
+
+# Recording the result (detect once)
+
+Which tracker a project uses is a fact, once evidence has settled it, not
+something to ask or re-detect every run.
+
+- After detecting from evidence (never after a cached hit), write or
+  update a `## Dev-Team Detected Facts` section in the project's
+  `CLAUDE.md` if one exists, otherwise `README.md`, at the repo root:
+  ```markdown
+  ## Dev-Team Detected Facts
+
+  - Tracker: `<id>` (evidence: `<what was checked>`) — detected
+    `<YYYY-MM-DD>` by tracker-detection. Delete this line to force
+    re-detection.
+  ```
+  Share the `## Dev-Team Detected Facts` heading with `stack-detection` if
+  it already added one — add this as another bullet under it, not a
+  second heading.
+- Commit it with whatever change triggered detection, or
+  `docs(<TICKET>): record detected tracker` standalone, per
+  delivery-conventions.

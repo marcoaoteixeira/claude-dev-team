@@ -16,14 +16,25 @@ worktrees, merges, the review marker) because that is orchestration.
 Team: `software-architect`, `qa-engineer`, `ux-specialist` (only when the
 architect says a UX spec is needed), and whichever stack-specific
 developer/reviewer agents `stack-detection` maps the project to (today:
-`backend-developer-dotnet` / `backend-reviewer-dotnet` or
-`backend-developer-kotlin` / `backend-reviewer-kotlin` for the backend;
-`frontend-developer-angular` / `frontend-reviewer-angular` or
-`frontend-developer-android` / `frontend-reviewer-android` for the
-frontend). Shared rules: `stack-detection`, `tracker-detection`,
-`delivery-conventions`, `angular-testing`, `xunit`, `kotlin-testing`,
-`android-testing`, `pr-writer`. The agents ship in this plugin and are namespaced: launch each
+`backend-developer-dotnet` / `backend-reviewer-dotnet` for a .NET backend;
+`frontend-developer-angular` / `frontend-reviewer-angular` for an Angular
+frontend; `kotlin-android-developer` / `kotlin-android-reviewer` for a
+Kotlin backend, an Android frontend, or both together — one pair, one
+developer, one reviewer, since both sides are Kotlin). Shared rules:
+`stack-detection`, `tracker-detection`, `delivery-conventions`,
+`angular-testing`, `xunit`, `kotlin-testing`, `android-testing`,
+`pr-writer`. The agents ship in this plugin and are namespaced: launch each
 one as `dev-team:<name>` (e.g. `subagent_type: dev-team:backend-developer-dotnet`).
+
+**Kotlin/Android is a single-developer stack.** When `stack.backend ==
+"kotlin"` and/or `stack.frontend == "android"`, the split verdict
+(BACKEND-ONLY/FRONTEND-ONLY/BACKEND-FIRST/PARALLEL) in stage 1 does not
+apply to that side — there is one `kotlin-android-developer` invocation
+per build round (mode `implement`), covering whichever side(s) the ticket
+touches, and one `kotlin-android-reviewer` review loop, not two. A ticket
+with a Kotlin backend **and** an Angular frontend (mixed stack) still
+splits normally between `kotlin-android-developer` (backend side) and
+`frontend-developer-angular` (frontend side) per the architect's verdict.
 
 # Operating Rules
 

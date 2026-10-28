@@ -1,6 +1,6 @@
 ---
 name: android-testing
-description: Android/Kotlin testing conventions — JUnit 5 or 4, MockK, Turbine for Flow, Jetpack Compose UI tests, Robolectric/instrumented tests. Use whenever writing, fixing or reviewing test files in an Android app, or working test-first on Android code — consulted by frontend-developer-android, frontend-reviewer-android and qa-engineer. The project's own testing conventions (README Testing section, ADRs, existing tests) always win over these defaults.
+description: Android/Kotlin testing conventions — JUnit 5 or 4, MockK, Turbine for Flow, Jetpack Compose UI tests, Robolectric/instrumented tests. Use whenever writing, fixing or reviewing test files in an Android app, or working test-first on Android code — consulted by kotlin-android-developer, kotlin-android-reviewer and qa-engineer. The project's own testing conventions (README Testing section, ADRs, existing tests) always win over these defaults.
 ---
 
 # Android Testing

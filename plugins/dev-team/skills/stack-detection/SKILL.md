@@ -16,9 +16,18 @@ chosen.
 | Side | Stack id | Developer agent | Reviewer agent |
 |---|---|---|---|
 | backend | `dotnet` | `backend-developer-dotnet` | `backend-reviewer-dotnet` |
-| backend | `kotlin` | `backend-developer-kotlin` | `backend-reviewer-kotlin` |
+| backend | `kotlin` | `kotlin-android-developer` | `kotlin-android-reviewer` |
 | frontend | `angular` | `frontend-developer-angular` | `frontend-reviewer-angular` |
-| frontend | `android` | `frontend-developer-android` | `frontend-reviewer-android` |
+| frontend | `android` | `kotlin-android-developer` | `kotlin-android-reviewer` |
+
+`kotlin-android-developer`/`-reviewer` is one pair covering **both** the
+Kotlin/JVM backend and the Android frontend — this plugin has no separate
+Kotlin-backend-only or Android-frontend-only agent. A project with a
+`kotlin` backend and an `angular` (or other non-Android) frontend, or an
+`android` frontend with a non-Kotlin backend, is still detected normally
+per side below; name both stack ids in the output and let the caller note
+that `kotlin-android-developer` is the agent for whichever side is
+`kotlin`/`android` and the other side's own pair handles the rest.
 
 A stack detected below that is not in this table is **unsupported** — see
 "Unsupported stack". Adding a new pair means adding rows here and to the
@@ -47,6 +56,13 @@ Check markers at the repo root and one level into typical module folders
 
 # Procedure
 
+0. **Check for a recorded result first** (see "Recording the result"
+   below) in `CLAUDE.md`/`AGENTS.md` (repo root and, in a monorepo, the
+   module's own) — a `## Dev-Team Detected Facts` section with a `stack:`
+   line. Found and the markers that produced it still exist (spot-check
+   the strong marker named there, e.g. the `.csproj` or `angular.json` is
+   still present) → use it, skip scanning. Missing, or that marker is
+   gone (the stack changed since) → scan as below and re-record.
 1. Scan for markers per side, independently — a repo may have only a
    backend, only a frontend, one of each, or several (monorepo).
 2. **Clear single match per side** → that stack, done.
@@ -91,3 +107,30 @@ This skill only names the stack and its agent pair — it does not read the
 stack's own conventions (nullable settings, Angular version, Kotlin target,
 etc.). That is each developer agent's own "Project Detection" step, run
 after it is invoked.
+
+# Recording the result (detect once)
+
+The stack is a fact about the repo, not an assumption — once markers have
+settled it, trust the record instead of re-scanning every run.
+
+- After a scan (never after a cached hit), write or update a
+  `## Dev-Team Detected Facts` section in the project's `CLAUDE.md` if one
+  exists, otherwise `README.md`, at the repo root (or the module's own
+  file, in a monorepo with per-module docs):
+  ```markdown
+  ## Dev-Team Detected Facts
+
+  - Stack: backend `<id>` (marker: `<path>`), frontend `<id>` (marker: `<path>`)
+    — detected `<YYYY-MM-DD>` by stack-detection. Delete this line to force
+    re-detection.
+  ```
+  If the section already exists (e.g. `tracker-detection` added a line
+  under the same heading), add this as another bullet under it — one
+  heading per project, not one per skill.
+- Commit it as part of whatever change triggered detection (or
+  `docs(<TICKET>): record detected stack` standalone) per
+  delivery-conventions — it is a Markdown-only doc update, same class as
+  README upkeep.
+- The recorded marker path is what makes the record self-checking: if that
+  file is gone next run, the record is stale and step 0 re-scans instead
+  of trusting a removed stack.

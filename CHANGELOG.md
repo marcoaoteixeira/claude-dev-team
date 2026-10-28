@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Agent `kotlin-android-developer` and reviewer `kotlin-android-reviewer`:
+  one developer/reviewer pair owning both the Kotlin/JVM backend service
+  and the Android app that consumes it, since one person builds both
+  sides of a Kotlin mobile stack test-first without a mock/integrate
+  hand-off with themself.
+- `stack-detection` and `tracker-detection`: both now check the project's
+  `CLAUDE.md`/`README.md` for a recorded `## Dev-Team Detected Facts`
+  section before scanning markers/evidence again, and write that section
+  after the first real detection in a run. The stack and the tracker are
+  facts about the project, not assumptions to re-derive on every
+  invocation; the record self-invalidates if its named marker/evidence
+  disappears.
+- `kotlin-android-developer`/`kotlin-android-reviewer`: a "Long-running
+  commands" rule against hanging on an unbounded shell `find` (notably
+  Windows' `find.exe`, which blocks on stdin with no output) or an
+  un-awaited Gradle task — background/time-box long commands, confirm the
+  real exit code before reporting a step done, and kill (and report) a
+  command that looks hung rather than waiting on it indefinitely.
 - Skill `tracker-detection`: identifies which work tracker a project uses
   (Jira or GitHub Issues/Projects v2) from connected-tool evidence — an
   Atlassian MCP vs an authenticated `github` MCP + `gh` CLI with the
@@ -19,8 +37,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   `gh` CLI, since the connected GitHub MCP server has no Projects-v2
   tool.
 
+### Removed
+
+- **BREAKING:** agents `backend-developer-kotlin`, `backend-reviewer-kotlin`,
+  `frontend-developer-android` and `frontend-reviewer-android` — merged
+  into `kotlin-android-developer` and `kotlin-android-reviewer` (see
+  Added). Any direct `subagent_type` invocation or saved doc using the
+  old names needs updating; `stack-detection`'s `kotlin` and `android`
+  rows now both point at the merged pair.
+
 ### Changed
 
+- `development-pipeline`: the backend/frontend build-split verdict
+  (BACKEND-ONLY/FRONTEND-ONLY/BACKEND-FIRST/PARALLEL) no longer applies
+  to the Kotlin/Android side — `kotlin-android-developer` runs once per
+  build round covering whichever side(s) the ticket touches, with one
+  review loop, not two.
 - `epic-brainstorm`'s tracker-ready doc is now `<Slug>-Epic-Tracker.md`
   (was `<Slug>-Epic-Jira.md`), built from the renamed
   `references/epic-template.md` (was `jira-template.md`).
