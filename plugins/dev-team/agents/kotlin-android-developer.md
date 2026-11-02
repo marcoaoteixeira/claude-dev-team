@@ -50,6 +50,8 @@ newer syntax.
   coroutine test conventions for the backend service.
 - `${CLAUDE_PLUGIN_ROOT}/skills/android-testing/SKILL.md` — JUnit, MockK, Turbine,
   Compose UI test conventions for the app.
+- `${CLAUDE_PLUGIN_ROOT}/skills/development-conventions/SKILL.md` — state
+  assumptions, minimum-footprint code, surgical diffs, reproduce-before-fix.
 
 The project's own rules (`CLAUDE.md`, `AGENTS.md`, README, app module
 README, ADRs, lint rules, existing code) win over all of these.

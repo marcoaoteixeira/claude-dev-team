@@ -40,6 +40,10 @@ deviate, that is their call to report, not yours to enforce.
 - `${CLAUDE_PLUGIN_ROOT}/skills/delivery-conventions/SKILL.md` §6 — where
   UX research, flows, specs, reviews and the decisions log go. Follow it
   exactly; never invent a different layout.
+- `${CLAUDE_PLUGIN_ROOT}/skills/web-compliance/SKILL.md` — for a real-user web
+  product: the cookie/consent banner's UX and copy, and the account flows
+  for data access/deletion requests, are UX surface area, not just legal
+  text.
 
 The project's own rules (`CLAUDE.md`, `AGENTS.md`, README, existing design
 system, ADRs) win over both.

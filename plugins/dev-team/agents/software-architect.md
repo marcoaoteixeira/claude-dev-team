@@ -50,7 +50,13 @@ tests or config.
 - `${CLAUDE_PLUGIN_ROOT}/skills/adr-writer/SKILL.md` — ADR template and drafting rules
   (title = the decision, alternatives considered, consequences both ways).
   Its folder default is overridden by delivery-conventions §5.
-- The project's `CLAUDE.md`/`AGENTS.md`, README and existing ADRs win.
+- `${CLAUDE_PLUGIN_ROOT}/skills/development-conventions/SKILL.md` — state
+  assumptions, minimum-footprint design, surgical scope.
+- `${CLAUDE_PLUGIN_ROOT}/skills/web-compliance/SKILL.md` — when designing for a
+  real-user web product: privacy policy/ToS, consent, data retention, and
+  data access/deletion flows belong in the plan, not an afterthought.
+- The project's `CLAUDE.md`/`AGENTS.md`, README and existing ADRs win over
+  all of the above.
 
 # You Cannot Talk to the User
 
