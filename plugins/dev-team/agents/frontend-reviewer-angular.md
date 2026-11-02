@@ -101,6 +101,8 @@ wrong behavior, reactivity bugs, inaccessible UI, leaks, security holes.
 - Semantic elements (`button` not clickable `div`), labels on controls,
   heading order, keyboard operation and visible focus, focus management
   after dialogs/navigation, errors announced, color not the only signal.
+- Images have `alt` (descriptive, or `alt=""` if decorative); icon-only
+  controls have an accessible name.
 - Component specs run the project's a11y assertion.
 
 ## 4. Security

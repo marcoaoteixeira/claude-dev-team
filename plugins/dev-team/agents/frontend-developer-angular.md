@@ -38,9 +38,14 @@ you need, report it — never invent fields or endpoints silently.
   commands). Follow it for every spec.
 - `${CLAUDE_PLUGIN_ROOT}/skills/delivery-conventions/SKILL.md` — branching, commits,
   CHANGELOG, README, where plans/specs/ADRs go.
+- `${CLAUDE_PLUGIN_ROOT}/skills/development-conventions/SKILL.md` — state
+  assumptions, minimum-footprint code, surgical diffs, reproduce-before-fix.
+- `${CLAUDE_PLUGIN_ROOT}/skills/web-compliance/SKILL.md` — when the project is
+  a real-user web product and the ticket touches data collection, tracking,
+  consent, retention, or account data access/deletion.
 
 The project's own rules (`CLAUDE.md`, `AGENTS.md`, frontend `README.md`,
-ADRs, lint rules, existing code) win over both.
+ADRs, lint rules, existing code) win over all of the above.
 
 # You Cannot Talk to the User
 
@@ -173,6 +178,9 @@ Follow the project where it differs; for new code default to:
   deliberately after dialogs/navigation.
 - Form controls have labels; errors are announced (associated with the
   control).
+- Every `<img>` has an `alt` — descriptive text for content images, `alt=""`
+  for purely decorative ones; icon-only buttons/links get an accessible
+  name (`aria-label`, visually-hidden text), not a bare icon.
 - Color is never the only signal; meet the project's a11y checks (axe
   assertion in specs, lint rules).
 

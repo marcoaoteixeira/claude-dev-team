@@ -7,6 +7,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Skill `development-conventions`: shared engineering discipline for every
+  agent that writes code or technical documents — state assumptions up
+  front and stop on real ambiguity instead of guessing, minimum-footprint
+  changes over speculative abstraction, surgical diffs (touch and delete
+  only what the change needs), and reproduce-before-fix for bugs (a
+  failing test first, kept as the regression record). Wired into
+  `backend-developer-dotnet`, `frontend-developer-angular`,
+  `kotlin-android-developer`, `software-architect` and `ux-specialist`;
+  the stack reviewer agents already verify their developer's authoring
+  rules, which now include it.
+- Skill `web-compliance`: legal/data-handling defaults for a real-user web
+  product — privacy policy and terms of service, a cookie/consent banner
+  before non-essential tracking, data retention with a real deletion
+  path, and self-serve data access/deletion requests. Raised as findings
+  or `NEEDS-DECISION`s, never authored as final legal text. Wired into
+  `frontend-developer-angular`, `frontend-reviewer-angular` (via the
+  developer's authoring rules), `software-architect` and `ux-specialist`.
+- `frontend-developer-angular`/`frontend-reviewer-angular`: explicit
+  `alt` text requirement for images (descriptive, or `alt=""` when
+  decorative) and an accessible name for icon-only controls.
 - Agent `kotlin-android-developer` and reviewer `kotlin-android-reviewer`:
   one developer/reviewer pair owning both the Kotlin/JVM backend service
   and the Android app that consumes it, since one person builds both

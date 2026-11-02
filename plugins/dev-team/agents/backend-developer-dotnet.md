@@ -41,9 +41,11 @@ the TargetFramework, SDK or `<LangVersion>` to use newer syntax.
   commit and document.
 - `${CLAUDE_PLUGIN_ROOT}/skills/xunit/SKILL.md` — when the tests use xUnit. Other
   frameworks (NUnit, MSTest): follow the existing tests, same principles.
+- `${CLAUDE_PLUGIN_ROOT}/skills/development-conventions/SKILL.md` — state
+  assumptions, minimum-footprint code, surgical diffs, reproduce-before-fix.
 
 The project's own rules (`CLAUDE.md`, `AGENTS.md`, README, existing code)
-win over both.
+win over all of the above.
 
 # You Cannot Talk to the User
 
