@@ -46,7 +46,8 @@ splits normally between `kotlin-android-developer` (backend side) and
      criteria change, conflict with an accepted ADR, new external
      system/vendor/dependency with cost or licence impact;
   3. the start-up questions below, when the arguments don't answer them;
-  4. the approval that starts the tracker hand-off (stage 9).
+  4. the suggestions triage before finalize (stage 5.5);
+  5. the approval that starts the tracker hand-off (stage 9).
   Everything else: take the specialist's recommendation, record it under
   "Decisions taken on your behalf", continue. Ask with `AskUserQuestion`,
   recommended option first.
@@ -234,36 +235,67 @@ merge-base with `origin/<default>`), ticket AC, plan/contract.
 
 **Frontend side, when `ux.specPath` is set**: also launch `ux-specialist`
 (mode design-qa) in the same message — prompt: the worktree, `ux.specPath`,
-ticket AC. Merge its 🔴/🟡 findings with the stack reviewer's into one
+ticket AC. Merge its 🔴 findings with the stack reviewer's into one
 `fix-findings` round (don't run two separate fix rounds for one commit
 set). Record its verdict in `ux.designQa`.
 
-- **PASS** (and design-qa PASS, when run) with no top suggestions open →
-  record `lastReviewed` = HEAD of that worktree; done.
-- **CHANGES-REQUIRED** from either, or top suggestions to address →
-  developer mode `fix-findings` with every 🔴 from both reports and the
-  top 3–5 suggestions ("fix, or answer with a reason"). A developer who
-  disputes a 🔴 → the reviewer that raised it, in **verify** mode (fresh
-  agent), decides.
-- Re-review covers the new commits (both the stack reviewer and, if it
-  ran, `ux-specialist`). **Cap: 3 rounds** per side. Still failing → stop
-  and report with the open findings.
+**Only 🔴 Critical blocks.** 🟡 suggestions (from either report) are never
+sent to the developer inline and never gate anything here — append them
+to `.claude/state/suggestions/<branch with / → __>.json` (one entry per
+suggestion: side, file:line, claim, fix, source agent) and move on. They
+surface once, together, at stage 5.5.
+
+- **PASS** (and design-qa PASS, when run) → record `lastReviewed` = HEAD
+  of that worktree; log any 🟡s; go to the QA loop (5).
+- **CHANGES-REQUIRED** from either (🔴 only) → developer mode
+  `fix-findings` with every 🔴 from both reports. A developer who disputes
+  a 🔴 → the reviewer that raised it, in **verify** mode (fresh agent),
+  decides.
+- After a `fix-findings` round, go straight to the QA loop (5) on the new
+  commits — **no re-review before QA.** The one re-review this side may
+  still get happens only if QA (5) sends work back to the developer.
+- **Cap: 2 review rounds** per side total (the initial review, plus the
+  one re-check from section 5). Still failing on round 2 → stop and
+  report with the open findings.
 
 Run backend and frontend reviews concurrently when both are pending.
 
-## 5. QA loop (per side, after its review passes)
+## 5. QA loop (per side, after its review passes or after a fix-findings round skips straight here)
 
 `qa-engineer` (mode verify, round n/2): ticket, agreed cases, worktree,
 test commands.
 - **APPROVED** → done.
 - **CHANGES-REQUIRED** → developer mode `add-tests` with QA's required
-  list → review loop on the new commits (counts toward the review cap) →
-  QA round 2. **Cap: 2 rounds.** Still not approved → stop and report.
+  list → **one** reviewer re-check (stack reviewer, mode review, scoped to
+  the new commits only — this is the side's 2nd and last review round,
+  see the cap in section 4) → QA round 2. **Cap: 2 QA rounds.** Still not
+  approved after round 2 → stop and report.
+
+## 5.5 Suggestions triage — once, after every side is reviewed and QA-approved, before the review marker
+
+Read `.claude/state/suggestions/<branch with / → __>.json`. Empty or
+missing → skip to 6.
+
+Otherwise, one `AskUserQuestion` per side with suggestions logged
+(`multiSelect: true`), listing each 🟡 as an option (label = short claim,
+description = `file:line` + the reviewer's fix), recommended default
+selection = the reviewer's original "Top suggestions" ranking. The user
+selects which to fix now; anything not selected is **deferred**, not
+dropped, unless the user's own answer says to drop it.
+
+- **Selected to fix now** → that side's developer, mode `fix-findings`,
+  with just those suggestions, commits in WT-main (or the side's
+  worktree if not yet merged). No reviewer re-check — the user already
+  approved the change, and these are non-blocking by definition.
+- **Deferred** → carry into the condensed summary's "open follow-ups"
+  (stage 9), one line each, so they survive as a record on the ticket.
+- **Dropped** → discard, no record needed.
 
 ## 6. Review marker
 
-When every side is reviewed and QA-approved and HEAD of WT-main equals
-the last reviewed commit, write
+When every side is reviewed and QA-approved, the suggestions triage (5.5)
+is done, and HEAD of WT-main equals the last commit from that triage (or
+the last reviewed commit, if nothing was fixed), write
 `<repo>/.claude/state/reviews/<branch with / → __>.json`:
 ```json
 {"branch":"<branch>","commit":"<git -C WT-main rev-parse HEAD>","ticket":"<TICKET>",

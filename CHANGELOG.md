@@ -5,6 +5,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- `development-pipeline`: cut review back-and-forth. The review loop now
+  blocks only on 🔴 Critical findings — 🟡 suggestions are logged instead
+  of sent to the developer inline, and a `fix-findings` round goes
+  straight to the QA loop with no re-review before it. The one re-review a
+  side can still get happens only if QA sends work back to the developer.
+  Review cap dropped from 3 rounds to 2. A new stage 5.5 (suggestions
+  triage), once per ticket after every side is reviewed and QA-approved,
+  bundles all logged 🟡s and asks the user which to fix now, defer as a
+  follow-up, or drop — replacing the old per-round "top suggestions" ask
+  baked into each developer fix cycle. `backend-reviewer-dotnet`,
+  `frontend-reviewer-angular` and `kotlin-android-reviewer` updated to
+  match: 🔴 is the only blocking severity, suggestions are never fixed
+  inline.
+
 ### Added
 
 - Skill `development-conventions`: shared engineering discipline for every
