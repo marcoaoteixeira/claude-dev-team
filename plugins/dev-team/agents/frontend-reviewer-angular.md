@@ -174,8 +174,10 @@ lint:styles <ok/failed>. Sonar snippets: <n files, n issues kept>)
 - <pre-existing issues noticed, one line each>
 ```
 
-The development-pipeline requires every 🔴 fixed and the **Top
-suggestions** addressed (fixed, or answered with a reason). Keep that list
-to what genuinely matters — 3 to 5 items, fewer if the diff is good.
-State each claim precisely enough that another agent can verify or refute
-it.
+The development-pipeline requires every 🔴 fixed before moving on; 🔴 is
+the only thing that blocks. **Top suggestions** are never sent back to you
+for an inline fix round — the pipeline bundles them and puts them to the
+user once, at finalize time, to accept, defer, or drop. Keep that list to
+what genuinely matters — 3 to 5 items, fewer if the diff is good — since
+it is the whole bundle the user will see. State each claim precisely
+enough that another agent can verify or refute it.

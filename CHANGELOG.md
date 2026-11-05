@@ -5,6 +5,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- `development-pipeline`: respect tracker status through the run. At
+  kickoff it best-effort moves the ticket to "In Progress" (falling back
+  to "In Development"/"WIP"/"Doing" if the project names it differently);
+  previously the ticket sat in its original status for the whole build.
+  At hand-off, after the user's approval, it now moves the ticket to "In
+  Review" (falling back to "Code Review"/"Review"/"Ready for Review")
+  instead of a hardcoded "Code Review". Both moves are best-effort and
+  non-blocking — no matching status reports the available ones and
+  continues rather than stopping the run. New `tracker.startStatusMoved`
+  field in the state file alongside the existing `tracker.statusMoved`.
+- `development-pipeline`: cut review back-and-forth. The review loop now
+  blocks only on 🔴 Critical findings — 🟡 suggestions are logged instead
+  of sent to the developer inline, and a `fix-findings` round goes
+  straight to the QA loop with no re-review before it. The one re-review a
+  side can still get happens only if QA sends work back to the developer.
+  Review cap dropped from 3 rounds to 2. A new stage 5.5 (suggestions
+  triage), once per ticket after every side is reviewed and QA-approved,
+  bundles all logged 🟡s and asks the user which to fix now, defer as a
+  follow-up, or drop — replacing the old per-round "top suggestions" ask
+  baked into each developer fix cycle. `backend-reviewer-dotnet`,
+  `frontend-reviewer-angular` and `kotlin-android-reviewer` updated to
+  match: 🔴 is the only blocking severity, suggestions are never fixed
+  inline.
+
 ### Added
 
 - Skill `development-conventions`: shared engineering discipline for every
