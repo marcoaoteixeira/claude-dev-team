@@ -1,6 +1,6 @@
 ---
 name: development-pipeline
-description: Deliver one refined ticket (Jira or GitHub Issues) end to end with the agent team — stack-detection identifies each side's tech stack, software-architect designs (plan, API contract, ADRs, and whether a UX spec is needed), ux-specialist specs user-facing flows when the architect says so, qa-engineer sets the test cases, the matching stack-specific backend/frontend developer agents build test-first (in parallel worktrees when the contract allows, otherwise backend first), their reviewer agents review (ux-specialist design-QAs the UI alongside the frontend reviewer when a spec exists), qa-engineer verifies, then the branch is pushed and a draft PR opened (or saved as a file); once the user approves, a condensed summary is commented on the ticket and it moves to Code Review. Runs unattended within a time budget (default 3h), resumable. Manual invocation only — "/dev-team:development-pipeline PROJ-123 [2h] [--resume]" (or a GitHub issue number).
+description: Deliver one refined ticket (Jira or GitHub Issues) end to end with the agent team — marks the ticket in progress on the tracker at kickoff, stack-detection identifies each side's tech stack, software-architect designs (plan, API contract, ADRs, and whether a UX spec is needed), ux-specialist specs user-facing flows when the architect says so, qa-engineer sets the test cases, the matching stack-specific backend/frontend developer agents build test-first (in parallel worktrees when the contract allows, otherwise backend first), their reviewer agents review (ux-specialist design-QAs the UI alongside the frontend reviewer when a spec exists), qa-engineer verifies, then the branch is pushed and a draft PR opened (or saved as a file); once the user approves, a condensed summary is commented on the ticket and it moves to review. Runs unattended within a time budget (default 3h), resumable. Manual invocation only — "/dev-team:development-pipeline PROJ-123 [2h] [--resume]" (or a GitHub issue number).
 argument-hint: <TICKET> [budget e.g. 3h] [--resume]
 disable-model-invocation: true
 ---
@@ -87,7 +87,18 @@ splits normally between `kotlin-android-developer` (backend side) and
    first". Blocked by an open ticket (`is blocked by` link not Done) →
    warn in the report and continue only if the blocker does not change
    what this ticket builds; otherwise stop.
-5. **Repo preflight** (main checkout = `<repo>`):
+5. **Mark in progress.** Best-effort, non-blocking — a status signal, not
+   a gate. Try the adapter's `set-status(key, targetStatusName)` with
+   `"In Progress"` first. If it reports no matching transition, compare
+   its returned available-status names against `["In Development",
+   "WIP", "Doing"]` (case-insensitive) and retry once with the first one
+   that matches. Still no match → note the available statuses for the
+   final report and move on; a resumed run where `tracker.startStatusMoved`
+   is already `true` → skip. A call that fails outright (auth,
+   permissions, MCP/CLI not connected) → note it the same way and
+   continue; never stop the run over this. Record
+   `tracker.startStatusMoved` (true/false) in the state file either way.
+6. **Repo preflight** (main checkout = `<repo>`):
    - `git status --porcelain` clean? Not clean → stop and report (never
      stash or discard the user's changes).
    - Default branch, `git fetch`, project rules (`CLAUDE.md`, `AGENTS.md`,
@@ -100,16 +111,16 @@ splits normally between `kotlin-android-developer` (backend side) and
    - **Stack detection** per the `stack-detection` skill: identify each
      side's stack from repo markers and its agent pair. Record
      `stack: {"backend":"<id>|null, "frontend":"<id>|null}` in the state
-     file (step 7). Ambiguous or a side with no markers on a new/empty
+     file (step 8). Ambiguous or a side with no markers on a new/empty
      project → ask once with `AskUserQuestion` (this is one of the
      start-up questions rule 3 allows). A detected stack with **no agent
      pair in this plugin** → stop and report "unsupported stack" rather
      than guessing or substituting a different pair — this is not a
      `NEEDS-DECISION` to take a recommendation on, it is a hard stop.
-6. **Branch.** Per delivery-conventions §1 from `origin/<default>`:
+7. **Branch.** Per delivery-conventions §1 from `origin/<default>`:
    `<kind>/<TICKET>-<slug>`. Create it without checking it out yet
    (`git branch <branch> origin/<default>`).
-7. **State file** `<repo>/.claude/state/work/<TICKET>/state.json`:
+8. **State file** `<repo>/.claude/state/work/<TICKET>/state.json`:
    ```json
    {"ticket":"PROJ-123","branch":"feature/PROJ-123-x","base":"main",
     "budgetMinutes":180,"spentMinutes":0,"stageStartedAt":null,
@@ -118,7 +129,8 @@ splits normally between `kotlin-android-developer` (backend side) and
     "split":null,"worktrees":{},"stage":"design","done":[],
     "loops":{"beReview":0,"feReview":0,"beQa":0,"feQa":0},
     "lastReviewed":{"be":null,"fe":null},
-    "decisions":[],"gatesSkipped":[],"documents":[],"pr":null,"tracker":{"commentId":null,"statusMoved":false}}
+    "decisions":[],"gatesSkipped":[],"documents":[],"pr":null,
+    "tracker":{"commentId":null,"startStatusMoved":false,"statusMoved":false}}
    ```
    Update it at every stage boundary (stage done, loop counters, verdicts,
    spent time). It is how a run resumes.
@@ -147,7 +159,7 @@ dependencies fresh there (`pnpm install --frozen-lockfile` / `npm ci`) —
 never link another checkout's `node_modules`. .NET restores on build.
 
 Prompt: ticket (full text + AC + assumptions), epic goal, WT-main path,
-the stack detected in step 5 (so it doesn't re-detect), "write documents
+the stack detected in step 6 (so it doesn't re-detect), "write documents
 there, do not commit". Result:
 - `NEEDS-DECISION` → rule 2 applies → ask the user; otherwise take the
   recommendation. Re-run design with the answer if it changes the plan.
@@ -328,7 +340,7 @@ Only for a run that reached stage 8 with the branch pushed and a PR
 opened (or saved). A stopped run never gets here.
 
 1. **Ask** with `AskUserQuestion`: "Approve the work and update the
-   tracker (summary comment + move <TICKET> to Code Review)?" Options:
+   tracker (summary comment + move <TICKET> to review)?" Options:
    `Approve and update the tracker (Recommended)`, `Not yet`. `Not yet` →
    keep `"stage":"tracker"` and end the run; `--resume` asks again. Only
    the user's own answer approves — never an agent's verdict, a review or
@@ -349,13 +361,15 @@ opened (or saved). A stopped run never gets here.
    markdown. Record the returned comment id in the state file
    (`tracker.commentId`). On a resume where it is already set, update
    that comment instead of adding a second one.
-4. **Move to Code Review**: the adapter's `set-status(key, "Code
-   Review")`. Already in Code Review → skip. No matching status/mechanism
-   → do not pick another one; report what the adapter said (available
-   transitions for Jira; missing Projects-v2 board for GitHub) and leave
-   the ticket where it is. A failure the adapter flags as needing manual
-   input (e.g. Jira's `hasScreen: true`) → report it, do not retry with
-   guessed fields.
+4. **Move to review**: the adapter's `set-status(key, "In Review")`.
+   Already there → skip. No matching transition → compare its returned
+   available-status names against `["Code Review", "Review", "Ready for
+   Review"]` (case-insensitive) and retry once with the first one that
+   matches. Still no match/mechanism → report what the adapter said
+   (available transitions for Jira; missing Projects-v2 board for GitHub)
+   and leave the ticket where it is. A failure the adapter flags as
+   needing manual input (e.g. Jira's `hasScreen: true`) → report it, do
+   not retry with guessed fields.
 5. Record `tracker.statusMoved`, set `"stage":"complete"` and add one
    line to the user: comment posted (link to the ticket) and the new
    status.

@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- `development-pipeline`: respect tracker status through the run. At
+  kickoff it best-effort moves the ticket to "In Progress" (falling back
+  to "In Development"/"WIP"/"Doing" if the project names it differently);
+  previously the ticket sat in its original status for the whole build.
+  At hand-off, after the user's approval, it now moves the ticket to "In
+  Review" (falling back to "Code Review"/"Review"/"Ready for Review")
+  instead of a hardcoded "Code Review". Both moves are best-effort and
+  non-blocking — no matching status reports the available ones and
+  continues rather than stopping the run. New `tracker.startStatusMoved`
+  field in the state file alongside the existing `tracker.statusMoved`.
 - `development-pipeline`: cut review back-and-forth. The review loop now
   blocks only on 🔴 Critical findings — 🟡 suggestions are logged instead
   of sent to the developer inline, and a `fix-findings` round goes
